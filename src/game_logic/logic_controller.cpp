@@ -3,7 +3,7 @@
 #include <vector> // for std::vector
 #include <iostream> // for std::cout and std::endl
 #include <algorithm> // for std::find
-#include <FastLED.h>
+#include <FastLED.h> // for LEDs
 
 using namespace std;
 
@@ -34,7 +34,7 @@ namespace logic
     // // 77-79: Blue's Start
 
     LogicController::LogicController()
-    : Player(), Board(), Chip(), Special(), Calc(), Terminal() {}
+    : Player(), Board(), Chip(), Special(), Calc(), Terminal(), Scanner{} {}
 
     void LogicController::startGame() {
         Serial.println("Setup Complete");

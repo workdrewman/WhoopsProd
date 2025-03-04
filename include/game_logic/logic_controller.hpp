@@ -18,6 +18,7 @@
 #include "logic_special.hpp"
 #include "logic_calculations.hpp"
 #include "logic_terminal.hpp"
+#include "rfid/rfid_scanner.hpp"
 
 #include <vector> // for std::vector
 #include <memory> // for std::shared_ptr
@@ -37,6 +38,7 @@ namespace logic
             LogicSpecial Special;
             LogicCalculations Calc;
             LogicTerminal Terminal;
+            rfid::RfidScanner Scanner;
 
         public:
             LogicController();
