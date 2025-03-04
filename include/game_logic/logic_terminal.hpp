@@ -5,9 +5,11 @@
 #include <vector>
 #include <iostream>
 
+#include "rfid/rfid_scanner.hpp"
+
 namespace logic {
     class LogicBoard;
-    class LogicChip;
+    class RfidScanner;
     class LogicPlayer;  
     class LogicCalculations;
     class LogicTerminal {
@@ -15,7 +17,7 @@ namespace logic {
             LogicTerminal();
             int t_GetChip();
             int t_setStartAreas(LogicBoard* Board, LogicPlayer* Player);
-            void t_displayChipInstructions(LogicChip* Chip);
+            void t_displayChipInstructions(rfid::RfidScanner* Scanner);
             void t_whereAreMyPieces(LogicBoard* Board, LogicPlayer* Player);
             void t_selectPiece(LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc);
     };

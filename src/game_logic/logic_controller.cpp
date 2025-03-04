@@ -34,7 +34,8 @@ namespace logic
     // // 77-79: Blue's Start
 
     LogicController::LogicController()
-    : Player(), Board(), Chip(), Special(), Calc(), Terminal(), Scanner{} {}
+    : Player(), Board(), Special(), Calc(), Terminal(), Scanner() {
+    }
 
     void LogicController::startGame() {
         Serial.println("Setup Complete");
@@ -59,8 +60,8 @@ namespace logic
         Serial.println();
         //Scan chip
         Serial.println("Draw and scan a chip");
-        Chip.lastChip = Chip.waitForChip(&Terminal);
-        Terminal.t_displayChipInstructions(&Chip);
+        Scanner.lastChip = Scanner.scanCard();
+        Terminal.t_displayChipInstructions(&Scanner);
 
         //Display pieces
         Terminal.t_whereAreMyPieces(&Board, &Player);
@@ -69,7 +70,7 @@ namespace logic
         Terminal.t_selectPiece(&Board, &Player, &Calc);
 
         //Light leds of possible moves
-        vector<int> possibleMoves = Calc.findPossibleMoves(&Board, &Player, Calc.movingFrom, Chip.lastChip);
+        vector<int> possibleMoves = Calc.findPossibleMoves(&Board, &Player, Calc.movingFrom, Scanner.lastChip);
         //If there are no possible moves, go to next player
         if (possibleMoves.size() == 0) {
             Serial.println("No possible moves");
@@ -83,12 +84,12 @@ namespace logic
         Serial.println();
 
         //handle whoops, 7s, and 11s
-        Special.handleWhoops(&Chip, &Board, &Player, &Calc, possibleMoves);
-        Special.handleSeven(&Chip, &Board, &Player, &Calc, possibleMoves, Calc.movingFrom);
-        Special.handleEleven(&Chip, &Board, &Player, possibleMoves, Calc.movingFrom);
+        Special.handleWhoops(&Scanner, &Board, &Player, &Calc, possibleMoves);
+        Special.handleSeven(&Scanner, &Board, &Player, &Calc, possibleMoves, Calc.movingFrom);
+        Special.handleEleven(&Scanner, &Board, &Player, possibleMoves, Calc.movingFrom);
         //Place piece on new location
         int newLocation;
-        if (!(Chip.lastChip == 0 || Chip.lastChip == 7 || Chip.lastChip == 11)) {
+        if (!(Scanner.lastChip == 0 || Scanner.lastChip == 7 || Scanner.lastChip == 11)) {
             Serial.print("Select a location to move to: ");
             newLocation = stoi((Serial.readStringUntil('\n').c_str()));
             while (find(possibleMoves.begin(), possibleMoves.end(), newLocation) == possibleMoves.end()) {

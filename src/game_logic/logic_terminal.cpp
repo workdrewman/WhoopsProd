@@ -3,7 +3,7 @@
 #include "game_logic/logic_terminal.hpp"
 #include "game_logic/logic_board.hpp"
 #include "game_logic/logic_player.hpp"
-#include "game_logic/logic_chip.hpp"
+#include "rfid/rfid_scanner.hpp"
 #include "game_logic/logic_calculations.hpp"
 #include "game_logic/logic_special.hpp"
 #include <FastLED.h>
@@ -51,8 +51,8 @@ namespace logic {
         return Player->getPlayerCount();
     }
 
-    void LogicTerminal::t_displayChipInstructions(LogicChip* Chip) {
-        switch (Chip->lastChip) {
+    void LogicTerminal::t_displayChipInstructions(rfid::RfidScanner* Scanner) {
+        switch (Scanner->lastChip) {
             case 0:
                 Serial.println("Whoops! Take any one pawn from Start and move it directly to a square occupied by any opponent's pawn, sending that pawn back to its own Start. A Whoops! chip cannot be used on an opponent's pawn in a Safety Zone or at the Home base. If there are no pawns on the player's Start, or no opponent's pawns on any space that can be moved to, the turn ends.");
                 break;
