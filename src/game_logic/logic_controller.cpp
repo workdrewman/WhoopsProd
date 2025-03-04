@@ -43,7 +43,7 @@ namespace logic
         Serial.read();
         Serial.println("Game Started");
         Player.currentPlayer = 0;
-        Player.setPlayerCount(&Chip, &Terminal);
+        Player.setPlayerCount(&Scanner, &Terminal);
         Serial.println("Player count: " + String(Player.getPlayerCount()));
         Serial.println();
 

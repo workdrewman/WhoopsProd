@@ -5,10 +5,11 @@
 #include <vector>
 #include <iostream>
 
+#include "rfid/rfid_scanner.hpp"
+
 using namespace std;
 
 namespace logic {
-    class LogicChip;
     class LogicBoard;
     class LogicTerminal;
     class LogicPlayer {
@@ -20,7 +21,7 @@ namespace logic {
             int getPlayerColor(int playerIndex) const;
             void setPlayerColor(int movingFrom, int color, int player);
             int getPlayerCount();
-            void setPlayerCount(LogicChip* Chip, LogicTerminal* Terminal);
+            void setPlayerCount(rfid::RfidScanner* Scanner, LogicTerminal* Terminal);
             void handleSelfCollision(LogicBoard* Board, int possibleMove, vector<int> &possibleMoves, int index);
 
             int currentPlayer;

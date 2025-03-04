@@ -4,6 +4,7 @@
 #include "game_logic/logic_board.hpp"
 #include "game_logic/logic_chip.hpp"
 #include "game_logic/logic_terminal.hpp"
+
 #include <FastLED.h>
 
 using namespace std;
@@ -34,17 +35,17 @@ namespace logic {
         return playerCount;
     }
 
-    void LogicPlayer::setPlayerCount(LogicChip* Chip, LogicTerminal* Terminal) {
+    void LogicPlayer::setPlayerCount(rfid::RfidScanner* Scanner, LogicTerminal* Terminal) {
         //Scan chip to get player count
         Serial.println("Get number of players: ");
         //Audio
-        int lastChip = Chip->waitForChip(Terminal);
+        int lastChip = Scanner->scanCard();
         while (lastChip < 2 || lastChip > 4) {
             //ERROR
             Serial.println("Invalid number of players");
             //Audio
             //Scan chip to get player count
-            lastChip = Chip->waitForChip(Terminal);
+            lastChip = Scanner->scanCard();
         }
         playerCount = lastChip;
         lastChip = -1;
