@@ -1,4 +1,4 @@
-#include "../../include/game_logic/logic_controller.hpp"
+#include "game_logic/logic_controller.hpp"
 
 #include <vector> // for std::vector
 #include <iostream> // for std::cout and std::endl
@@ -90,10 +90,10 @@ namespace logic
         int newLocation;
         if (!(Chip.lastChip == 0 || Chip.lastChip == 7 || Chip.lastChip == 11)) {
             Serial.print("Select a location to move to: ");
-            newLocation = int(Serial.readStringUntil('\n'));
+            newLocation = stoi((Serial.readStringUntil('\n').c_str()));
             while (find(possibleMoves.begin(), possibleMoves.end(), newLocation) == possibleMoves.end()) {
                 Serial.print("Invalid location, please select a valid location: ");
-                newLocation = int(Serial.readStringUntil('\n'));
+                newLocation = stoi(Serial.readStringUntil('\n').c_str());
             }
             //If piece hits other piece, send other piece back to start
             if (Board.currentLocations[newLocation] != 0) {

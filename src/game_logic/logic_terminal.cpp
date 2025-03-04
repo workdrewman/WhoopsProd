@@ -1,11 +1,11 @@
 /// logic_terminal.cpp
+
 #include "game_logic/logic_terminal.hpp"
 #include "game_logic/logic_board.hpp"
 #include "game_logic/logic_player.hpp"
 #include "game_logic/logic_chip.hpp"
 #include "game_logic/logic_calculations.hpp"
 #include "game_logic/logic_special.hpp"
-#include <iostream>
 #include <FastLED.h>
 
 using namespace std;
@@ -15,7 +15,7 @@ namespace logic {
     
     int LogicTerminal::t_GetChip() {
         Serial.print("Enter chip number: ");
-        int chip = int(Serial.readStringUntil('\n'));
+        int chip = stoi(Serial.readStringUntil('\n').c_str());
         return chip;
     }
 
@@ -105,11 +105,11 @@ namespace logic {
         int location;
         int color = Player->getPlayerColor(Player->currentPlayer);
         Serial.print("Select a location to move " + String(Player->currentPlayer + 1) + "'s piece from: ");
-        location = int(Serial.readStringUntil('\n'));
+        location = stoi(Serial.readStringUntil('\n').c_str());
         while (Board->currentLocations[location] != color) {
             Serial.println("Invalid piece");
             Serial.print("Select a piece to move: ");
-            location = int(Serial.readStringUntil('\n'));
+            location = stoi(Serial.readStringUntil('\n').c_str());
         }
         Calc->movingFrom = location;
         //setPlayerColor();

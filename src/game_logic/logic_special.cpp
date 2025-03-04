@@ -1,4 +1,5 @@
 /// logic_special.cpp
+
 #include "game_logic/logic_special.hpp"
 #include "game_logic/logic_board.hpp"
 #include "game_logic/logic_player.hpp"
@@ -15,11 +16,11 @@ namespace logic {
         if (Chip->lastChip == 0) {
             int opponentPawn;
             Serial.print("Select an opponent's pawn to send back to start: ");
-            opponentPawn = int(Serial.readStringUntil('\n'));
+            opponentPawn = stoi(Serial.readStringUntil('\n').c_str());
             while (find(possibleMoves.begin(), possibleMoves.end(), opponentPawn) == possibleMoves.end()) {
                 Serial.println("Invalid pawn");
                 Serial.print("Select an opponent's pawn to send back to start: ");
-                opponentPawn = int(Serial.readStringUntil('\n'));
+                opponentPawn = stoi(Serial.readStringUntil('\n').c_str());
             }
             int opponentColor = Board->currentLocations[opponentPawn];
             Board->currentLocations[Board->findNextOpenStart(opponentColor)] = opponentColor;
@@ -35,11 +36,11 @@ namespace logic {
         if (Chip->lastChip == 7) {
             int color = Player->getPlayerColor(Player->currentPlayer);
             Serial.print("Place your pawn in a valid location: ");
-            int location = int(Serial.readStringUntil('\n'));
+            int location = stoi(Serial.readStringUntil('\n').c_str());
             while (find(possibleMoves.begin(), possibleMoves.end(), location) == possibleMoves.end()) {
                 Serial.println("Invalid location");
                 Serial.print("Place your pawn in a valid location: ");
-                location = int(Serial.readStringUntil('\n'));
+                location = stoi(Serial.readStringUntil('\n').c_str());
             }
             Board->currentLocations[location] = color;
             Board->currentLocations[movingFrom] = 0;
@@ -59,11 +60,11 @@ namespace logic {
             }
             Serial.println();
             Serial.print("Select a pawn location to move from: ");
-            int secondPawnStart = int(Serial.readStringUntil('\n'));
+            int secondPawnStart = stoi(Serial.readStringUntil('\n').c_str());
             while (Board->currentLocations[secondPawnStart] != color) {
                 Serial.println("Invalid pawn");
                 Serial.print("Select a pawn to move: ");
-                secondPawnStart = int(Serial.readStringUntil('\n'));
+                secondPawnStart = stoi(Serial.readStringUntil('\n').c_str());
             }
             Serial.print("Move your second pawn " + String(secondDistance) + " spaces forward. Press any key to confirm:");
             while (!Serial.available()) {}
@@ -114,11 +115,11 @@ namespace logic {
             int endLocation;
             Serial.println("Select an opponent's pawn to send back to swap with or move forward 11 spaces");
             Serial.print("Enter the oppoents's pawn location or the location you are moving to: ");
-            endLocation = int(Serial.readStringUntil('\n'));
+            endLocation = stoi(Serial.readStringUntil('\n').c_str());
             while (find(possibleMoves.begin(), possibleMoves.end(), endLocation) == possibleMoves.end()) {
                 Serial.println("Invalid location");
                 Serial.print("Enter the oppoents's pawn location or the location you are moving to: ");
-                endLocation = int(Serial.readStringUntil('\n'));
+                endLocation = stoi(Serial.readStringUntil('\n').c_str());
             }
             if (Board->currentLocations[endLocation] == 0) {
                 Board->currentLocations[endLocation] = color;
