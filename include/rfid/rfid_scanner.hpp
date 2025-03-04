@@ -3,10 +3,22 @@
 //              of the RFID helper functions.
 // =======================================================
 
+///////////////////////////
+// PIN MAPPING
+// 3.3    ->    3.3
+// Reset  ->    D15
+// GND    ->    GND
+// MISO   ->    D19
+// MOSI   ->    D23
+// SCK    ->    D18
+// SDA    ->    D5
+///////////////////////////
+
 #ifndef RFID_SCANNER_H
 #define RFID_SCANNER_H
 
 #include <MFRC522.h>
+#include <SPI.h>
 
 namespace rfid{
 
@@ -14,7 +26,7 @@ const int kSSPin{5};
 const int kRSTPin{15};
 
 struct Card {
-    byte uid[7];           // UID of the card
+    byte uid[7];       // UID of the card
     uint8_t name;      // Name of the card
 };
 
@@ -34,21 +46,35 @@ const Card kAllowedCards[] = {
 const int kNumAllowedCards = sizeof(kAllowedCards) / sizeof(kAllowedCards[0]);
 const uint8_t kInvalidCardName{99};
 
-/// @brief Function to find if the scanned UID matches an allowed card
-/// @param scannedUID rfid card UID
-/// @param uidSize size of the UID
-/// @return returns the name (number on card)
-uint8_t getCardName(byte *scannedUID, byte uidSize);
+class RfidScanner{
 
-/// @brief Helper routine to dump a byte array as hex values to Serial. 
-/// @param buffer the byte array from rfid
-/// @param bufferSize size of the buffer
-void printHex(byte *buffer, byte bufferSize);
+ public:
+  /// @brief Constructor to initialize the scanner
+  RfidScanner();
 
-/// @brief Helper routine to dump a byte array as dec values to Serial.
-/// @param buffer the byte array from rfid
-/// @param bufferSize size of the buffer
-void printDec(byte *buffer, byte bufferSize);
+  /// @brief Function that busy waits until card is scanned
+  /// @return The number the the rfid card corresponds to
+  uint8_t scanCard();
+
+  /// @brief Function to find if the scanned UID matches an allowed card
+  /// @param scannedUID rfid card UID
+  /// @param uidSize size of the UID
+  /// @return returns the name (number on card)
+  uint8_t getCardName(byte *scannedUID, byte uidSize);
+
+ private:
+  /// @brief Helper routine to dump a byte array as hex values to Serial. 
+  /// @param buffer the byte array from rfid
+  /// @param bufferSize size of the buffer
+  void printHex(byte *buffer, byte bufferSize);
+
+  /// @brief Helper routine to dump a byte array as dec values to Serial.
+  /// @param buffer the byte array from rfid
+  /// @param bufferSize size of the buffer
+  void printDec(byte *buffer, byte bufferSize);
+
+  MFRC522 _rfid_scanner;
+};
 
 } // namespace rfid
 #endif // RFID_SCANNER_H

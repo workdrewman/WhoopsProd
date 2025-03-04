@@ -3,25 +3,27 @@
 //              of the RFID helper functions.
 // =======================================================
 
-#include "rfid/rfid_scanner.hpp" // for helper function templates
+#include "rfid/rfid_scanner.hpp" // for RfidScanner class
 
 namespace rfid {
 
-void printHex(byte *buffer, byte bufferSize) {
+RfidScanner::RfidScanner() : _rfid_scanner{kSSPin, kRSTPin} {}
+
+void RfidScanner::printHex(byte *buffer, byte bufferSize) {
   for (byte i = 0; i < bufferSize; i++) {
     Serial.print(buffer[i] < 0x10 ? " 0" : " ");
     Serial.print(buffer[i], HEX);
   }
 }
 
-void printDec(byte *buffer, byte bufferSize) {
+void RfidScanner::printDec(byte *buffer, byte bufferSize) {
   for (byte i = 0; i < bufferSize; i++) {
     Serial.print(' ');
     Serial.print(buffer[i], DEC);
   }
 }
 
-uint8_t getCardName(byte *scannedUID, byte uidSize) {
+uint8_t RfidScanner::getCardName(byte *scannedUID, byte uidSize) {
   for (int i = 0; i < kNumAllowedCards; i++) {
     // Check if UID sizes match
     if (uidSize != sizeof(kAllowedCards[i].uid)) {
@@ -44,6 +46,25 @@ uint8_t getCardName(byte *scannedUID, byte uidSize) {
   }
 
   return kInvalidCardName; // No matches found
+}
+
+uint8_t RfidScanner::scanCard()
+{
+  while (!(_rfid_scanner.PICC_IsNewCardPresent() && _rfid_scanner.PICC_ReadCardSerial())) {
+    uint8_t new_card_id = getCardName(_rfid_scanner.uid.uidByte, _rfid_scanner.uid.size);
+    if (new_card_id != kInvalidCardName) {
+      Serial.println(F("Tag accepted"));
+      Serial.print(F("Card Name: "));
+      Serial.println(new_card_id);
+      return new_card_id;
+    } 
+    
+    else {
+      Serial.println(F("Tag not recognized"));
+    }
+
+    _rfid_scanner.PICC_HaltA(); // Stop reading after one scan
+  }
 }
 
 } // namespace rfid
