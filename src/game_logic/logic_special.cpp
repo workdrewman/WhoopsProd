@@ -12,7 +12,7 @@
 namespace logic {
     LogicSpecial::LogicSpecial() {}
 
-    void LogicSpecial::handleWhoops(RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves) {
+    void LogicSpecial::handleWhoops(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves) {
         if (Scanner->lastChip == 0) {
             int opponentPawn;
             Serial.print("Select an opponent's pawn to send back to start: ");
@@ -32,7 +32,7 @@ namespace logic {
         }
     }
 
-    void LogicSpecial::handleSeven(RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom) {
+    void LogicSpecial::handleSeven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom) {
         if (Scanner->lastChip == 7) {
             int color = Player->getPlayerColor(Player->currentPlayer);
             Serial.print("Place your pawn in a valid location: ");
@@ -109,7 +109,7 @@ namespace logic {
         Board->currentLocations[start] = 0;
     }
 
-    void LogicSpecial::handleEleven(RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, vector<int> possibleMoves, int movingFrom) {
+    void LogicSpecial::handleEleven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, vector<int> possibleMoves, int movingFrom) {
         if (Scanner->lastChip == 11) {
             int color = Player->getPlayerColor(Player->currentPlayer);
             int endLocation;
