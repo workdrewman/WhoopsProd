@@ -2,7 +2,7 @@
 
 #include "game_logic/logic_player.hpp"
 #include "game_logic/logic_board.hpp"
-#include "game_logic/logic_chip.hpp"
+#include "rfid/rfid_scanner.hpp"
 #include "game_logic/logic_terminal.hpp"
 
 #include <FastLED.h>

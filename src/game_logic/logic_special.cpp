@@ -3,8 +3,8 @@
 #include "game_logic/logic_special.hpp"
 #include "game_logic/logic_board.hpp"
 #include "game_logic/logic_player.hpp"
+#include "rfid/rfid_scanner.hpp"
 #include "game_logic/logic_calculations.hpp"
-#include "game_logic/logic_chip.hpp"
 #include <algorithm>
 #include <FastLED.h>
 
@@ -12,8 +12,8 @@
 namespace logic {
     LogicSpecial::LogicSpecial() {}
 
-    void LogicSpecial::handleWhoops(LogicChip* Chip, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves) {
-        if (Chip->lastChip == 0) {
+    void LogicSpecial::handleWhoops(RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves) {
+        if (Scanner->lastChip == 0) {
             int opponentPawn;
             Serial.print("Select an opponent's pawn to send back to start: ");
             opponentPawn = stoi(Serial.readStringUntil('\n').c_str());
@@ -32,8 +32,8 @@ namespace logic {
         }
     }
 
-    void LogicSpecial::handleSeven(LogicChip* Chip, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom) {
-        if (Chip->lastChip == 7) {
+    void LogicSpecial::handleSeven(RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom) {
+        if (Scanner->lastChip == 7) {
             int color = Player->getPlayerColor(Player->currentPlayer);
             Serial.print("Place your pawn in a valid location: ");
             int location = stoi(Serial.readStringUntil('\n').c_str());
@@ -109,8 +109,8 @@ namespace logic {
         Board->currentLocations[start] = 0;
     }
 
-    void LogicSpecial::handleEleven(LogicChip* Chip, LogicBoard* Board, LogicPlayer* Player, vector<int> possibleMoves, int movingFrom) {
-        if (Chip->lastChip == 11) {
+    void LogicSpecial::handleEleven(RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, vector<int> possibleMoves, int movingFrom) {
+        if (Scanner->lastChip == 11) {
             int color = Player->getPlayerColor(Player->currentPlayer);
             int endLocation;
             Serial.println("Select an opponent's pawn to send back to swap with or move forward 11 spaces");

@@ -59,7 +59,7 @@ namespace logic
         Serial.println();
         //Scan chip
         Serial.println("Draw and scan a chip");
-        Chip.lastChip = Chip.waitForChip(&Terminal);
+        Scanner.lastChip = Chip.waitForChip(&Terminal);
         Terminal.t_displayChipInstructions(&Chip);
 
         //Display pieces
@@ -69,7 +69,7 @@ namespace logic
         Terminal.t_selectPiece(&Board, &Player, &Calc);
 
         //Light leds of possible moves
-        vector<int> possibleMoves = Calc.findPossibleMoves(&Board, &Player, Calc.movingFrom, Chip.lastChip);
+        vector<int> possibleMoves = Calc.findPossibleMoves(&Board, &Player, Calc.movingFrom, Scanner.lastChip);
         //If there are no possible moves, go to next player
         if (possibleMoves.size() == 0) {
             Serial.println("No possible moves");
@@ -88,7 +88,7 @@ namespace logic
         Special.handleEleven(&Chip, &Board, &Player, possibleMoves, Calc.movingFrom);
         //Place piece on new location
         int newLocation;
-        if (!(Chip.lastChip == 0 || Chip.lastChip == 7 || Chip.lastChip == 11)) {
+        if (!(Scanner.lastChip == 0 || Scanner.lastChip == 7 || Scanner.lastChip == 11)) {
             Serial.print("Select a location to move to: ");
             newLocation = stoi((Serial.readStringUntil('\n').c_str()));
             while (find(possibleMoves.begin(), possibleMoves.end(), newLocation) == possibleMoves.end()) {

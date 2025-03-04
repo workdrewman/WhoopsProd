@@ -14,7 +14,6 @@
 
 #include "logic_player.hpp"
 #include "logic_board.hpp"
-#include "logic_chip.hpp"
 #include "logic_special.hpp"
 #include "logic_calculations.hpp"
 #include "logic_terminal.hpp"
@@ -34,7 +33,6 @@ namespace logic
         private:
             LogicPlayer Player;
             LogicBoard Board;
-            LogicChip Chip;
             LogicSpecial Special;
             LogicCalculations Calc;
             LogicTerminal Terminal;

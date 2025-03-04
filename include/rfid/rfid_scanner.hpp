@@ -52,6 +52,9 @@ class RfidScanner{
   /// @brief Constructor to initialize the scanner
   RfidScanner();
 
+  /// @brief Variable to store the last chip scanned
+  int lastChip;
+
   /// @brief Function that busy waits until card is scanned
   /// @return The number the the rfid card corresponds to
   uint8_t scanCard();

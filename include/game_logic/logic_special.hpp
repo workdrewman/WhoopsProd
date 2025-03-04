@@ -8,17 +8,17 @@
 using namespace std;
 
 namespace logic {
-    class LogicChip;
+    class RfidScanner;
     class LogicBoard;
     class LogicPlayer;  
     class LogicCalculations;
     class LogicSpecial {
         public:
             LogicSpecial();
-            void handleWhoops(LogicChip* Chip, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves);
-            void handleSeven(LogicChip* Chip, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom);
+            void handleWhoops(RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves);
+            void handleSeven(RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom);
             void moveSecondPawn(LogicBoard* Board, LogicPlayer* Player, int distance, int start);
-            void handleEleven(LogicChip* Chip, LogicBoard* Board, LogicPlayer* Player, vector<int> possibleMoves, int movingFrom);
+            void handleEleven(RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, vector<int> possibleMoves, int movingFrom);
     };
 }
 
