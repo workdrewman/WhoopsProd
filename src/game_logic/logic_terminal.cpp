@@ -95,7 +95,7 @@ namespace logic {
         Serial.print("Player " + String(Player->currentPlayer + 1) + "'s pieces: ");
         for (int i = 0; i < kBoardSize; i++) {
             if (Board->currentLocations[i] == color) {
-                Serial.print(i + " ");
+                Serial.printf("%d ",i);
             }
         }
         Serial.println();
@@ -103,15 +103,43 @@ namespace logic {
 
     void LogicTerminal::t_selectPiece(LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc) {
         int location;
-        int color = Player->getPlayerColor(Player->currentPlayer);
+        int color = Player->getPlayerColor(Player->currentPlayer);     
         Serial.print("Select a location to move " + String(Player->currentPlayer + 1) + "'s piece from: ");
-        location = stoi(Serial.readStringUntil('\n').c_str());
+        location = readIntFromSerial();
         while (Board->currentLocations[location] != color) {
             Serial.println("Invalid piece");
             Serial.print("Select a piece to move: ");
-            location = stoi(Serial.readStringUntil('\n').c_str());
+            location = readIntFromSerial();
         }
         Calc->movingFrom = location;
         //setPlayerColor();
     }
+
+    int readIntFromSerial() {
+        while (true) {            
+            // Wait for user input
+            while (!Serial.available()) {
+                delay(10);  // Avoids busy-waiting
+            }
+    
+            String input = Serial.readStringUntil('\n');  // Read the input
+            input.trim();  // Remove leading/trailing spaces or newlines
+    
+            if (input.length() == 0) {  // Check if input is empty
+                Serial.println("Error: No input received. Try again.");
+                continue;
+            }
+    
+            char *end;
+            long number = strtol(input.c_str(), &end, 10);  // Convert safely
+    
+            if (*end != '\0') {  // Check if the input was a valid number
+                Serial.println("Error: Invalid input. Please enter a valid integer.");
+                continue;
+            }
+    
+            return static_cast<int>(number);  // Return the valid integer
+        }
+    }
+    
 }

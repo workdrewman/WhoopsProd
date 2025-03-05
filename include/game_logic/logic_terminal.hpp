@@ -20,7 +20,8 @@ namespace logic {
             void t_displayChipInstructions(rfid::RfidScanner* Scanner);
             void t_whereAreMyPieces(LogicBoard* Board, LogicPlayer* Player);
             void t_selectPiece(LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc);
-    };
-}
+        };
+    }
+    int readIntFromSerial();
 
 #endif // GAME_BOARD_LOGIC_TERMINAL_HPP

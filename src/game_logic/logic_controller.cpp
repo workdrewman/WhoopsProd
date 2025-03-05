@@ -52,7 +52,11 @@ namespace logic
         Serial.println("Please place pieces on start locations");
         while (!Board.allPiecesOnStart(&Player, &Terminal)) {};
 
-        takeTurn();
+        while (!Board.checkWinCondition(&Player)){
+            takeTurn();
+        }
+        Serial.println("Player " + String(Player.currentPlayer + 1) + " wins!");
+
     }
 
     void LogicController::takeTurn() {
@@ -75,7 +79,7 @@ namespace logic
         if (possibleMoves.size() == 0) {
             Serial.println("No possible moves");
             nextPlayer();
-            takeTurn();
+            return;
         }
         Serial.print("Possible moves: ");
         for (int i = 0; i < possibleMoves.size(); i++) {
@@ -91,10 +95,10 @@ namespace logic
         int newLocation;
         if (!(Scanner.lastChip == 0 || Scanner.lastChip == 7 || Scanner.lastChip == 11)) {
             Serial.print("Select a location to move to: ");
-            newLocation = stoi((Serial.readStringUntil('\n').c_str()));
+            newLocation = readIntFromSerial();
             while (find(possibleMoves.begin(), possibleMoves.end(), newLocation) == possibleMoves.end()) {
                 Serial.print("Invalid location, please select a valid location: ");
-                newLocation = stoi(Serial.readStringUntil('\n').c_str());
+                newLocation = readIntFromSerial();
             }
             //If piece hits other piece, send other piece back to start
             if (Board.currentLocations[newLocation] != 0) {
@@ -111,10 +115,10 @@ namespace logic
         Board.checkSlide(&Player, newLocation);
         
         if (Board.checkWinCondition(&Player)) {
-            Serial.println("Player " + String(Player.currentPlayer + 1) + " wins!");
+            return;
         } else {
             nextPlayer();
-            takeTurn();
+            return;
         }
     }
 
