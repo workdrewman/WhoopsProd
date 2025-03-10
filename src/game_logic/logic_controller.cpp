@@ -4,6 +4,7 @@
 #include <iostream> // for std::cout and std::endl
 #include <algorithm> // for std::find
 #include <FastLED.h> // for LEDs
+#include "led_control/led.hpp" // for helper functions
 
 using namespace std;
 
@@ -78,11 +79,16 @@ namespace logic
             nextPlayer();
             return;
         }
+
+        led_control::indicate_possible_moves(Calc.movingFrom, possibleMoves, Player.getPlayerColor(Player.currentPlayer));
+
         Serial.print("Possible moves: ");
         for (int i = 0; i < possibleMoves.size(); i++) {
-            Serial.print(possibleMoves[i] + " ");
+            Serial.printf("%d ", possibleMoves[i]);
         }
         Serial.println();
+
+        // set LEDs
 
         //handle whoops, 7s, and 11s
         Special.handleWhoops(&Scanner, &Board, &Player, &Calc, possibleMoves);
@@ -97,6 +103,7 @@ namespace logic
                 Serial.print("Invalid location, please select a valid location: ");
                 newLocation = readIntFromSerial();
             }
+            Serial.printf("\nMoving player %d's piece %d ----> %d\n", Player.currentPlayer + 1, Calc.movingFrom, newLocation);
             //If piece hits other piece, send other piece back to start
             if (Board.currentLocations[newLocation] != 0) {
                 Serial.print("COLLISION: Send opponent's piece back to start. Press any key to confirm: ");
