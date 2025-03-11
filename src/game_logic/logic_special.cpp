@@ -26,6 +26,8 @@ namespace logic {
             Board->currentLocations[Board->findNextOpenStart(opponentColor)] = opponentColor;
             Board->currentLocations[opponentPawn] = Player->getPlayerColor(Player->currentPlayer);
             Board->currentLocations[Calc->movingFrom] = 0;
+            //Slide if on slide square
+            int newLocation = Board->checkSlide(Player, opponentPawn);
             Serial.println("Press any key to confirm opponent's pawn has been sent back to start and your pawn has been set in their previous location.");
             while (!Serial.available()) {}
             Serial.read();
@@ -44,12 +46,17 @@ namespace logic {
             }
             Board->currentLocations[location] = color;
             Board->currentLocations[movingFrom] = 0;
+            //Slide if on slide square
+            int newLocation = Board->checkSlide(Player, location);
             int firstDistance = Calc->getDistance(Player, movingFrom, location);
             int secondDistance = 7 - firstDistance;
+            if (secondDistance == 0) {
+                return;
+            }
             Serial.println("You have " + String(secondDistance) + " spaces left to move with your second pawn.");
             Serial.print("Possible second pawn current locations(s): ");
             for (int i = 0; i < 44; i++) {
-                if (Board->currentLocations[i] == color && i != location) {
+                if (Board->currentLocations[i] == color && i != location && i != newLocation) {
                     Serial.print(i + " ");
                 }
             }
@@ -107,6 +114,8 @@ namespace logic {
         }
         Board->currentLocations[location] = color;
         Board->currentLocations[start] = 0;
+        //Slide if on slide square
+        location = Board->checkSlide(Player, location);
     }
 
     void LogicSpecial::handleEleven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, vector<int> possibleMoves, int movingFrom) {
@@ -123,10 +132,17 @@ namespace logic {
             }
             if (Board->currentLocations[endLocation] == 0) {
                 Board->currentLocations[endLocation] = color;
+                //Slide if on slide square
+                endLocation = Board->checkSlide(Player, endLocation);
+                Board->currentLocations[movingFrom] = 0;
             } else {
                 int opponentColor = Board->currentLocations[endLocation];
                 Board->currentLocations[movingFrom] = opponentColor;
+                //Slide if on slide square
+                int opponentPosition = Board->checkSlide(Player, movingFrom);
                 Board->currentLocations[endLocation] = color;
+                //Slide if on slide square
+                endLocation = Board->checkSlide(Player, endLocation);
                 Serial.print("Press any key to confirm opponent's pawn swapped with your pawn.");
                 while (!Serial.available()) {}
                 Serial.read();

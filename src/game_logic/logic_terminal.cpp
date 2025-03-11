@@ -7,6 +7,7 @@
 #include "game_logic/logic_calculations.hpp"
 #include "game_logic/logic_special.hpp"
 #include <FastLED.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -90,23 +91,30 @@ namespace logic {
         Serial.println();
     }
 
-    void LogicTerminal::t_whereAreMyPieces(LogicBoard* Board, LogicPlayer* Player) {
+    void LogicTerminal::t_selectPiece(LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, int chip) {
         int color = Player->getPlayerColor(Player->currentPlayer);
         Serial.print("Player " + String(Player->currentPlayer + 1) + "'s pieces: ");
+        vector<int> possibleMoves, validPieces;
         for (int i = 0; i < kBoardSize; i++) {
             if (Board->currentLocations[i] == color) {
-                Serial.print(i + " ");
+                possibleMoves = Calc->findPossibleMoves(Board, Player, i, chip);
+                if (possibleMoves.size() != 0) {
+                    Serial.print(i + " ");
+                    validPieces.push_back(i);
+                }
             }
         }
         Serial.println();
-    }
 
-    void LogicTerminal::t_selectPiece(LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc) {
+        if (validPieces.size() == 0) {
+            Calc->movingFrom = -1;
+            return;
+        }
         int location;
-        int color = Player->getPlayerColor(Player->currentPlayer);
         Serial.print("Select a location to move " + String(Player->currentPlayer + 1) + "'s piece from: ");
         location = stoi(Serial.readStringUntil('\n').c_str());
-        while (Board->currentLocations[location] != color) {
+        //While location is not in validPieces
+        while (find(validPieces.begin(), validPieces.end(), location) == validPieces.end()) {
             Serial.println("Invalid piece");
             Serial.print("Select a piece to move: ");
             location = stoi(Serial.readStringUntil('\n').c_str());

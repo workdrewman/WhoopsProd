@@ -8,17 +8,12 @@
 
 namespace logic {
 
-    vector<int> LogicBoard::findOtherPawnLocations(LogicPlayer* Player) {  //Doesn't find pawns in home or start, but does find pawns in safety zone
+    vector<int> LogicBoard::findOtherPawnLocations(LogicPlayer* Player, int currentLocation) {  //Doesn't find pawns in home or start, but does find pawns in safety zone
         vector<int> otherPawnLocations;
         int color = Player->getPlayerColor(Player->currentPlayer);
-        for (int i = 0; i < 44; i++) {
-            if (currentLocations[i] == color) {
+        for (int i = 0; i < 80; i++) {
+            if (currentLocations[i] == color && i != currentLocation) {
                 otherPawnLocations.push_back(i);
-            }
-        }
-        for (int j = 0; j < kSafetyLocations.size(); j++) {
-            if (currentLocations[kSafetyLocations[j]] == color) {
-                otherPawnLocations.push_back(kSafetyLocations[j]);
             }
         }
         return otherPawnLocations;
@@ -143,26 +138,27 @@ namespace logic {
         return -1;
     }
 
-    void LogicBoard::checkSlide(LogicPlayer* Player, int location) {
+    //Returns the new location of the piece
+    int LogicBoard::checkSlide(LogicPlayer* Player, int location) {
         if (find(kSlideStartLocations.begin(), kSlideStartLocations.end(), location) != kSlideStartLocations.end()) {
             //Can't slide on your own color
-            int color = Player->getPlayerColor(Player->currentPlayer);
+            int color = currentLocations[location];
             if (color == 1 && (location == 0 || location == 6)) {  //Yellow
-                return;
+                return location;
             }
             else if (color == 2 && (location == 11 || location == 17)) {  //Green
-                return;
+                return location;
             }
             else if (color == 3 && (location == 22 || location == 28)) {  //Red
-                return;
+                return location;
             }
             else if (color == 4 && (location == 33 || location == 39)) {  //Blue
-                return;
+                return location;
             }
 
             //Otherwise slide
             int slideIndex= find(kSlideStartLocations.begin(), kSlideStartLocations.end(), location) - kSlideStartLocations.begin();
-            Serial.println("Move your piece to the end of the slide (location " + String(kSlideEndLocations[slideIndex]) + ") and send any pawns you collide with back to their Start.");
+            Serial.println("Move the piece to the end of the slide (location " + String(kSlideEndLocations[slideIndex]) + ") and send any pawns you collide with back to their Start.");
             for (int i = kSlideStartLocations[slideIndex] + 1; i <= kSlideEndLocations[slideIndex]; i++) {
                 if (currentLocations[i] != 0) {
                     currentLocations[findNextOpenStart(currentLocations[i])] = currentLocations[i];
@@ -171,7 +167,9 @@ namespace logic {
             }
             currentLocations[kSlideEndLocations[slideIndex]] = currentLocations[location];
             currentLocations[location] = 0;
+            return slideIndex;
         }
+        return location;
     }
 
     bool LogicBoard::allPiecesPlaced() {
