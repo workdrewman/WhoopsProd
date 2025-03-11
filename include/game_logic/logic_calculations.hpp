@@ -15,7 +15,7 @@ namespace logic {
             int movingFrom;
 
             vector<int> findPossibleMoves(LogicBoard* Board, LogicPlayer* Player, int pieceIndex, int distance);
-            void checkSecondPawnDistance(LogicBoard* Board, LogicPlayer* Player, int distances, vector<int> &possibleMoves);
+            void checkSecondPawnDistance(LogicBoard* Board, LogicPlayer* Player, int distances, int firstPawn, vector<int> &possibleMoves);
             int getDistance(LogicPlayer* Player, int start, int end);
     };
 }

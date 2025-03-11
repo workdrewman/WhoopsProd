@@ -63,11 +63,8 @@ namespace logic
         Scanner.lastChip = Scanner.scanCard();
         Terminal.t_displayChipInstructions(&Scanner);
 
-        //Display pieces
-        Terminal.t_whereAreMyPieces(&Board, &Player);
-
         //Pick up a piece
-        Terminal.t_selectPiece(&Board, &Player, &Calc);
+        Terminal.t_selectPiece(&Board, &Player, &Calc, Scanner.lastChip);
 
         //Light leds of possible moves
         vector<int> possibleMoves = Calc.findPossibleMoves(&Board, &Player, Calc.movingFrom, Scanner.lastChip);
@@ -105,10 +102,10 @@ namespace logic
             }
             Board.currentLocations[newLocation] = Board.currentLocations[Calc.movingFrom];
             Board.currentLocations[Calc.movingFrom] = 0;
-        }
 
-        //Slide if on slide square
-        Board.checkSlide(&Player, newLocation);
+            //Slide if on slide square
+            newLocation = Board.checkSlide(&Player, newLocation);
+        }
         
         if (Board.checkWinCondition(&Player)) {
             Serial.println("Player " + String(Player.currentPlayer + 1) + " wins!");

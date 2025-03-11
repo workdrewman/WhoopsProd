@@ -29,7 +29,7 @@ namespace logic {
             vector<int> currentLocations;
             vector<int> lastLocations;
             
-            vector<int> findOtherPawnLocations(LogicPlayer* Player);
+            vector<int> findOtherPawnLocations(LogicPlayer* Player, int currentLocation);
 
             void movePiece(int startIndex, int endIndex);
             bool isCollision(int location, int playerColor);
@@ -37,7 +37,7 @@ namespace logic {
 
             int findNextOpenHome(int color);
             int findNextOpenStart(int color);
-            void checkSlide(LogicPlayer* Player, int location);
+            int checkSlide(LogicPlayer* Player, int location);
 
             bool allPiecesPlaced();
             bool allPiecesOnStart(LogicPlayer* Player, LogicTerminal* Terminal);
