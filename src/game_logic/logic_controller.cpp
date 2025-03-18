@@ -8,6 +8,10 @@
 
 using namespace std;
 
+int from_tile;
+std::vector<int> possible_moves_led;
+CRGB led_color;
+
 namespace logic
 {
     // //No chip yet: -1, Whoops!: 0, Other chips: 1-12
@@ -83,20 +87,21 @@ namespace logic
             return;
         }
 
-        led_control::indicate_possible_moves(Calc.movingFrom, possibleMoves, Player.getPlayerColor(Player.currentPlayer));
-
         Serial.print("Possible moves: ");
         for (int i = 0; i < possibleMoves.size(); i++) {
             Serial.printf("%d ", possibleMoves[i]);
         }
         Serial.println();
-
+        
         // set LEDs
-
+        TaskHandle_t led_task = NULL;
+        indicate_moves(Calc.movingFrom, possibleMoves, Player.getPlayerColor(Player.currentPlayer), &led_task);
+        
         //handle whoops, 7s, and 11s
         Special.handleWhoops(&Scanner, &Board, &Player, &Calc, possibleMoves);
         Special.handleSeven(&Scanner, &Board, &Player, &Calc, possibleMoves, Calc.movingFrom);
         Special.handleEleven(&Scanner, &Board, &Player, possibleMoves, Calc.movingFrom);
+
         //Place piece on new location
         int newLocation;
         if (!(Scanner.lastChip == 0 || Scanner.lastChip == 7 || Scanner.lastChip == 11)) {
@@ -106,6 +111,7 @@ namespace logic
                 Serial.print("Invalid location, please select a valid location: ");
                 newLocation = readIntFromSerial();
             }
+            vTaskDelete(led_task); // turn off leds
             Serial.printf("\nMoving player %d's piece %d ----> %d\n", Player.currentPlayer + 1, Calc.movingFrom, newLocation);
             //If piece hits other piece, send other piece back to start
             if (Board.currentLocations[newLocation] != 0) {
@@ -132,5 +138,29 @@ namespace logic
     //Next player, 4 players in total
     void LogicController::nextPlayer() {
         Player.currentPlayer = (Player.currentPlayer + 1) % Player.getPlayerCount();
+    }
+
+    void LogicController::indicate_moves(int from, const vector<int>& possibleMoves, int color, TaskHandle_t* taskHandle)
+    {
+        from_tile = from;
+        possible_moves_led = possibleMoves;
+        led_color = led_control::number_to_color(color);
+        
+        xTaskCreate(ledTask, "LED Task", 4096, NULL, 1, taskHandle);
+    }
+
+
+    void ledTask(void *pvParameters) {        
+        while (1) {
+            Serial.println("LED sequence running...");
+    
+            for (int move : possible_moves_led) {
+                FastLED.leds()[move] = led_color;
+            }
+            FastLED.show();
+            vTaskDelay(pdMS_TO_TICKS(500));
+            FastLED.clear();
+            FastLED.show();
+        }
     }
 }

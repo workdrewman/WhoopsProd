@@ -19,6 +19,7 @@
 #include "logic_terminal.hpp"
 #include "rfid/rfid_scanner.hpp"
 
+#include <FastLED.h> // for LEDs
 #include <vector> // for std::vector
 #include <memory> // for std::shared_ptr
 #include <iostream> // for std::cout and std::endl
@@ -37,13 +38,16 @@ namespace logic
             LogicCalculations Calc;
             LogicTerminal Terminal;
             rfid::RfidScanner Scanner;
-
+            
         public:
             LogicController();
             void startGame();
             void takeTurn();
             void nextPlayer();
+            void indicate_moves(int from, const vector<int>& possibleMoves, int color, TaskHandle_t* taskHandle);
     };
+    
+    void ledTask(void* pvParameters);
 
 }
 
