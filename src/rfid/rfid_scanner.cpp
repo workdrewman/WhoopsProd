@@ -54,6 +54,7 @@ uint8_t RfidScanner::getCardName(byte *scannedUID, byte uidSize) {
 
 uint8_t RfidScanner::scanCard()
 {
+  _rfid_scanner.PCD_Init();
   while(1){
     if (_rfid_scanner.PICC_IsNewCardPresent() && _rfid_scanner.PICC_ReadCardSerial()) {
       uint8_t new_card_id = getCardName(_rfid_scanner.uid.uidByte, _rfid_scanner.uid.size);
