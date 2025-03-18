@@ -95,11 +95,8 @@ void demo_move(int card_scanned) {
   FastLED.show();
 }
 
-void indicate_possible_moves(int from, std::vector<int> to, int color, bool* on)
+void indicate_possible_moves(int from, std::vector<int> to, int color)
 {
-  if (to.size() == 1) {
-    indicate_move(from, to[0], number_to_color(color));
-  }
   light_tiles(to, number_to_color(color));
 }
 
