@@ -6,6 +6,7 @@
 #include "rfid/rfid_scanner.hpp"
 #include "game_logic/logic_calculations.hpp"
 #include "game_logic/logic_special.hpp"
+#include "led_control/led.hpp"
 #include <FastLED.h>
 #include <algorithm>
 

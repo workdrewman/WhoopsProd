@@ -26,10 +26,6 @@ namespace led_control
   /// @brief Method to indicate a move from one tile to another
   /// @param card_scanned number of the scanned card
   void demo_move(int card_scanned);
-
-  void indicate_possible_moves(int from, std::vector<int> to, int color);
-  
-  void light_tiles(std::vector<int> tiles, CRGB color);
   
   CRGB number_to_color(int color);
 
