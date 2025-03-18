@@ -95,21 +95,6 @@ void demo_move(int card_scanned) {
   FastLED.show();
 }
 
-void indicate_possible_moves(int from, std::vector<int> to, int color)
-{
-  light_tiles(to, number_to_color(color));
-}
-
-void light_tiles(std::vector<int> tiles, CRGB color)
-{
-  for (size_t i = 0; i < tiles.size(); i++) {
-    FastLED.leds()[tiles[0]] = color;
-  }
-  FastLED.show();
-  FastLED.delay(500);
-  FastLED.clear();
-}
-
 //Yellow: 1, Green: 2, Red: 3, Blue: 4
 CRGB number_to_color(int color)
 {

@@ -58,6 +58,7 @@ namespace logic
         while (!Board.allPiecesOnStart(&Player, &Terminal)) {};
 
         while (!Board.checkWinCondition(&Player)){
+            showCorrectPositions(&Board);
             takeTurn();
         }
         Serial.println("Player " + String(Player.currentPlayer + 1) + " wins!");
@@ -71,6 +72,10 @@ namespace logic
         Serial.println("Draw and scan a chip");
         Scanner.lastChip = Scanner.scanCard();
         Terminal.t_displayChipInstructions(&Scanner);
+        
+        // Stop showing where all pieces should be
+        FastLED.clear();
+        FastLED.show();
 
         //Display pieces
         Terminal.t_whereAreMyPieces(&Board, &Player);
@@ -93,9 +98,9 @@ namespace logic
         }
         Serial.println();
         
-        // set LEDs
+        // flash LEDs at potential move locations
         TaskHandle_t led_task = NULL;
-        indicate_moves(Calc.movingFrom, possibleMoves, Player.getPlayerColor(Player.currentPlayer), &led_task);
+        indicate_moves(possibleMoves, Player.getPlayerColor(Player.currentPlayer), &led_task);
         
         //handle whoops, 7s, and 11s
         Special.handleWhoops(&Scanner, &Board, &Player, &Calc, possibleMoves);
@@ -140,15 +145,13 @@ namespace logic
         Player.currentPlayer = (Player.currentPlayer + 1) % Player.getPlayerCount();
     }
 
-    void LogicController::indicate_moves(int from, const vector<int>& possibleMoves, int color, TaskHandle_t* taskHandle)
+    void LogicController::indicate_moves(const vector<int>& possibleMoves, int color, TaskHandle_t* taskHandle)
     {
-        from_tile = from;
         possible_moves_led = possibleMoves;
         led_color = led_control::number_to_color(color);
         
         xTaskCreate(ledTask, "LED Task", 4096, NULL, 1, taskHandle);
     }
-
 
     void ledTask(void *pvParameters) {        
         while (1) {
@@ -161,6 +164,18 @@ namespace logic
             vTaskDelay(pdMS_TO_TICKS(500));
             FastLED.clear();
             FastLED.show();
+            vTaskDelay(pdMS_TO_TICKS(500));
         }
+    }
+
+    void LogicController::showCorrectPositions(LogicBoard* board) {
+        for (int i = 0; i < logic::kBoardSize; i++) {
+            if (board->currentLocations[i] == 0) {
+                FastLED.leds()[i] = CRGB::Black;
+            } else {
+                FastLED.leds()[i] = led_control::number_to_color(board->currentLocations[i]);
+            }
+        }
+        FastLED.show();
     }
 }
