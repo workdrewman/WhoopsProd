@@ -12,7 +12,6 @@ int start_pos;
 std::vector<int> possible_moves_led;
 CRGB led_color;
 
-
 namespace logic
 {
     // //No chip yet: -1, Whoops!: 0, Other chips: 1-12
@@ -128,6 +127,8 @@ namespace logic
 
             //Slide if on slide square
             newLocation = Board.checkSlide(&Player, newLocation);
+        } else {
+            vTaskDelete(led_task); // turn off leds
         }
         
         if (Board.checkWinCondition(&Player)) {
@@ -148,6 +149,9 @@ namespace logic
         possible_moves_led = possibleMoves;
         led_color = led_control::number_to_color(color);
         start_pos = start_tile;
+
+        FastLED.clear();
+        FastLED.show();
         
         xTaskCreate(ledTask, "LED Task", 4096, NULL, 1, taskHandle);
     }
@@ -171,9 +175,11 @@ namespace logic
     }
 
     void LogicController::showCorrectPositions(LogicBoard* board) {
+        FastLED.clear();
+        FastLED.show();
         for (int i = 0; i < logic::kBoardSize; i++) {
             if (board->currentLocations[i] == 0) {
-                FastLED.leds()[i] = CRGB::Black;
+                continue;
             } else {
                 FastLED.leds()[i] = led_control::number_to_color(board->currentLocations[i]);
             }

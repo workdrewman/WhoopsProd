@@ -102,9 +102,9 @@ CRGB number_to_color(int color)
     case 1:
       return CRGB::Yellow;
     case 2:
-      return CRGB::Green;
-    case 3:
       return CRGB::Red;
+    case 3:
+      return CRGB::Green;
     case 4:
       return CRGB::Blue;
   }
