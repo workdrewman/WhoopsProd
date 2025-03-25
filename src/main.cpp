@@ -8,6 +8,8 @@
 CRGB leds[NUM_LEDS];
 void setup() {
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  FastLED.clear();
+  FastLED.show();
   set_max_power_in_volts_and_milliamps(5, 200);
   Serial.begin(9600);
   logic::LogicController* logicController = new logic::LogicController;
