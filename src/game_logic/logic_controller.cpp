@@ -8,9 +8,10 @@
 
 using namespace std;
 
-int from_tile;
+int start_pos;
 std::vector<int> possible_moves_led;
 CRGB led_color;
+
 
 namespace logic
 {
@@ -100,7 +101,7 @@ namespace logic
         
         // flash LEDs at potential move locations
         TaskHandle_t led_task = NULL;
-        indicate_moves(possibleMoves, Player.getPlayerColor(Player.currentPlayer), &led_task);
+        indicate_moves(possibleMoves, Player.getPlayerColor(Player.currentPlayer), Calc.movingFrom, &led_task);
         
         //handle whoops, 7s, and 11s
         Special.handleWhoops(&Scanner, &Board, &Player, &Calc, possibleMoves);
@@ -145,24 +146,28 @@ namespace logic
         Player.currentPlayer = (Player.currentPlayer + 1) % Player.getPlayerCount();
     }
 
-    void LogicController::indicate_moves(const vector<int>& possibleMoves, int color, TaskHandle_t* taskHandle)
+    void LogicController::indicate_moves(const vector<int>& possibleMoves, int color, int start_tile, TaskHandle_t* taskHandle)
     {
         possible_moves_led = possibleMoves;
         led_color = led_control::number_to_color(color);
+        start_pos = start_tile;
         
         xTaskCreate(ledTask, "LED Task", 4096, NULL, 1, taskHandle);
     }
 
     void ledTask(void *pvParameters) {        
         while (1) {
-            Serial.println("LED sequence running...");
-    
+            // Serial.println("LED sequence running...");
+            FastLED.leds()[start_pos] = led_color;
             for (int move : possible_moves_led) {
                 FastLED.leds()[move] = led_color;
             }
             FastLED.show();
             vTaskDelay(pdMS_TO_TICKS(500));
-            FastLED.clear();
+
+            for (int move : possible_moves_led) {
+                FastLED.leds()[move] = CRGB::Black;
+            }
             FastLED.show();
             vTaskDelay(pdMS_TO_TICKS(500));
         }
