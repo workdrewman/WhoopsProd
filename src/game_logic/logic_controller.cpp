@@ -70,7 +70,10 @@ namespace logic
         Serial.println();
         //Scan chip
         Serial.println("Draw and scan a chip");
-        Scanner.lastChip = Scanner.scanCard();
+        
+        uint8_t scan_val = rfid::kInvalidCardName;
+        while (scan_val = Scanner.scanCard() != rfid::kInvalidCardName){}
+        Scanner.lastChip = scan_val;
         Terminal.t_displayChipInstructions(&Scanner);
         
         // Stop showing where all pieces should be

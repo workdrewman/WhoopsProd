@@ -54,23 +54,41 @@ uint8_t RfidScanner::getCardName(byte *scannedUID, byte uidSize) {
 
 uint8_t RfidScanner::scanCard()
 {
-  while(1){
+  unsigned long start_time = millis();
+  const unsigned long timeout = 5000; // 5-second timeout
+
+  while (millis() - start_time < timeout) {
     if (_rfid_scanner.PICC_IsNewCardPresent() && _rfid_scanner.PICC_ReadCardSerial()) {
       uint8_t new_card_id = getCardName(_rfid_scanner.uid.uidByte, _rfid_scanner.uid.size);
       if (new_card_id != kInvalidCardName) {
-        Serial.println(("Tag accepted"));
-        Serial.print(("Card Name: "));
+        Serial.println("Tag accepted");
+        Serial.print("Card Name: ");
         Serial.println(new_card_id);
-        _rfid_scanner.PICC_HaltA(); // Stop reading after one scan
+        _rfid_scanner.PICC_HaltA();
         return new_card_id;
-      } 
-      
-      else {
-        Serial.println(("Tag not recognized"));
+      } else {
+        Serial.println("Tag not recognized");
       }
-      _rfid_scanner.PICC_HaltA(); // Stop reading after one scan
+      _rfid_scanner.PICC_HaltA();
     }
   }
+
+  Serial.println("RFID scan timeout, resetting scanner...");
+  resetScanner(); // Reset scanner on timeout
+  return kInvalidCardName;
+}
+
+void RfidScanner::resetScanner() {
+  _rfid_scanner.PCD_Init(); // Reset RFID module
+  Serial.println("RFID scanner reset");
+}
+
+void RfidScanner::powerCycleScanner() {
+  digitalWrite(kSSPin, LOW);  // Turn off RFID module (depends on wiring)
+  delay(500);                 // Wait for power to fully discharge
+  digitalWrite(kSSPin, HIGH); // Turn back on
+  _rfid_scanner.PCD_Init();   // Reinitialize scanner
+  Serial.println("RFID scanner power-cycled and reset");
 }
 
 } // namespace rfid
