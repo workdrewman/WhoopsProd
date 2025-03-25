@@ -61,13 +61,13 @@ uint8_t RfidScanner::scanCard()
         Serial.println(("Tag accepted"));
         Serial.print(("Card Name: "));
         Serial.println(new_card_id);
+        _rfid_scanner.PICC_HaltA(); // Stop reading after one scan
         return new_card_id;
       } 
       
       else {
         Serial.println(("Tag not recognized"));
       }
-
       _rfid_scanner.PICC_HaltA(); // Stop reading after one scan
     }
   }
