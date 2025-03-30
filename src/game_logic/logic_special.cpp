@@ -135,7 +135,18 @@ namespace logic {
                 //Slide if on slide square
                 endLocation = Board->checkSlide(Player, endLocation);
                 Board->currentLocations[movingFrom] = 0;
-            } else {
+            } 
+            else if (endLocation == (movingFrom + 11)%44) {
+                Serial.print("COLLISION: Send opponent's piece back to start. Press any key to confirm: ");
+                while (!Serial.available()) {}
+                Serial.read();
+                Board->currentLocations[Board->findNextOpenStart(Board->currentLocations[endLocation])] = Board->currentLocations[endLocation];
+                Board->currentLocations[endLocation] = color;
+                //Slide if on slide square
+                endLocation = Board->checkSlide(Player, endLocation);
+                Board->currentLocations[movingFrom] = 0;
+            }
+            else {
                 int opponentColor = Board->currentLocations[endLocation];
                 Board->currentLocations[movingFrom] = opponentColor;
                 //Slide if on slide square

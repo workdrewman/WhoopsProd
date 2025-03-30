@@ -157,78 +157,78 @@ namespace logic {
                     checkSecondPawnDistance(Board, Player, 1, selectedPawn, possibleMoves);
                 }
                 else if (selectedPawn == (48 + 9*(color-1))) {  //Two away from home
-                    possibleMoves.push_back(Board->findNextOpenHome(color));
                     possibleMoves.push_back(selectedPawn - 1);
+                    possibleMoves.push_back(Board->findNextOpenHome(color));
                     checkSecondPawnDistance(Board, Player, 2, selectedPawn, possibleMoves);
                 }
                 else if (selectedPawn == (49 + 9*(color-1))) {  //Three away from home
-                    possibleMoves.push_back(Board->findNextOpenHome(color));
                     possibleMoves.push_back(selectedPawn - 1);
                     possibleMoves.push_back(selectedPawn - 2);
+                    possibleMoves.push_back(Board->findNextOpenHome(color));
                     checkSecondPawnDistance(Board, Player, 3, selectedPawn, possibleMoves);
                 }
                 else if (selectedPawn == (1 + 11*(color-1))) {  //Four away from home
-                    possibleMoves.push_back(Board->findNextOpenHome(color));
-                    possibleMoves.push_back(47 + 9*(color-1));
-                    possibleMoves.push_back(48 + 9*(color-1));
                     possibleMoves.push_back(49 + 9*(color-1));
+                    possibleMoves.push_back(48 + 9*(color-1));
+                    possibleMoves.push_back(47 + 9*(color-1));
+                    possibleMoves.push_back(Board->findNextOpenHome(color));
                     checkSecondPawnDistance(Board, Player, 4, selectedPawn, possibleMoves);
                 }
                 else if (selectedPawn == (0 + 11*(color-1))) {  //Five away from home
-                    possibleMoves.push_back(Board->findNextOpenHome(color));
-                    possibleMoves.push_back(47 + 9*(color-1));
-                    possibleMoves.push_back(48 + 9*(color-1));
-                    possibleMoves.push_back(49 + 9*(color-1));
                     possibleMoves.push_back(1 + 11*(color-1));
+                    possibleMoves.push_back(49 + 9*(color-1));
+                    possibleMoves.push_back(48 + 9*(color-1));
+                    possibleMoves.push_back(47 + 9*(color-1));
+                    possibleMoves.push_back(Board->findNextOpenHome(color));
                     checkSecondPawnDistance(Board, Player, 5, selectedPawn, possibleMoves);
                 }
                 else if (selectedPawn == ((43 + 11*(color-1))%44)) {    //Six away from home
-                    possibleMoves.push_back(Board->findNextOpenHome(color));
-                    possibleMoves.push_back(47 + 9*(color-1));
-                    possibleMoves.push_back(48 + 9*(color-1));
-                    possibleMoves.push_back(49 + 9*(color-1));
-                    possibleMoves.push_back(1 + 11*(color-1));
                     possibleMoves.push_back(0 + 11*(color-1));
+                    possibleMoves.push_back(1 + 11*(color-1));
+                    possibleMoves.push_back(49 + 9*(color-1));
+                    possibleMoves.push_back(48 + 9*(color-1));
+                    possibleMoves.push_back(47 + 9*(color-1));
+                    possibleMoves.push_back(Board->findNextOpenHome(color));
                     checkSecondPawnDistance(Board, Player, 6, selectedPawn, possibleMoves);
                 }
                 else if (selectedPawn == ((42 + 11*(color-1))%44)) {    //Seven away from home
+                    possibleMoves.push_back((43 + 11*(color-1))%44);
+                    possibleMoves.push_back(0 + 11*(color-1));
+                    possibleMoves.push_back(1 + 11*(color-1));
+                    possibleMoves.push_back(49 + 9*(color-1));
+                    possibleMoves.push_back(48 + 9*(color-1));
+                    possibleMoves.push_back(47 + 9*(color-1));
                     possibleMoves.push_back(Board->findNextOpenHome(color));
+                    checkSecondPawnDistance(Board, Player, 7, selectedPawn, possibleMoves);
+                }
+                else if (selectedPawn == ((41 + 11*(color-1))%44)) {    //Eight away from home
+                    possibleMoves.push_back((42 + 11*(color-1))%44);
+                    possibleMoves.push_back((43 + 11*(color-1))%44);
+                    possibleMoves.push_back(0 + 11*(color-1));
+                    possibleMoves.push_back(1 + 11*(color-1));
+                    possibleMoves.push_back(49 + 9*(color-1));
+                    possibleMoves.push_back(48 + 9*(color-1));
                     possibleMoves.push_back(47 + 9*(color-1));
-                    possibleMoves.push_back(48 + 9*(color-1));
-                    possibleMoves.push_back(49 + 9*(color-1));
-                    possibleMoves.push_back(1 + 11*(color-1));
-                    possibleMoves.push_back(0 + 11*(color-1));
-                    possibleMoves.push_back((43 + 11*(color-1))%44);
                     checkSecondPawnDistance(Board, Player, 7, selectedPawn, possibleMoves);
                 }
-                else if (selectedPawn == ((42 + 11*(color-1))%44)) {    //Eight away from home
-                    possibleMoves.push_back(47 + 9*(color-1));
-                    possibleMoves.push_back(48 + 9*(color-1));
-                    possibleMoves.push_back(49 + 9*(color-1));
-                    possibleMoves.push_back(1 + 11*(color-1));
-                    possibleMoves.push_back(0 + 11*(color-1));
-                    possibleMoves.push_back((43 + 11*(color-1))%44);
-                    possibleMoves.push_back((42 + 11*(color-1))%44);
-                    checkSecondPawnDistance(Board, Player, 7, selectedPawn, possibleMoves);
-                }
-                else if (selectedPawn == ((42 + 11*(color-1))%44)) {    //Nine away from home
-                    possibleMoves.push_back(48 + 9*(color-1));
-                    possibleMoves.push_back(49 + 9*(color-1));
-                    possibleMoves.push_back(1 + 11*(color-1));
-                    possibleMoves.push_back(0 + 11*(color-1));
-                    possibleMoves.push_back((43 + 11*(color-1))%44);
-                    possibleMoves.push_back((42 + 11*(color-1))%44);
+                else if (selectedPawn == ((40 + 11*(color-1))%44)) {    //Nine away from home
                     possibleMoves.push_back((41 + 11*(color-1))%44);
+                    possibleMoves.push_back((42 + 11*(color-1))%44);
+                    possibleMoves.push_back((43 + 11*(color-1))%44);
+                    possibleMoves.push_back(0 + 11*(color-1));
+                    possibleMoves.push_back(1 + 11*(color-1));
+                    possibleMoves.push_back(49 + 9*(color-1));
+                    possibleMoves.push_back(48 + 9*(color-1));
                     checkSecondPawnDistance(Board, Player, 7, selectedPawn, possibleMoves);
                 }
-                else if (selectedPawn == ((42 + 11*(color-1))%44)) {    //Ten away from home
-                    possibleMoves.push_back(49 + 9*(color-1));
-                    possibleMoves.push_back(1 + 11*(color-1));
-                    possibleMoves.push_back(0 + 11*(color-1));
-                    possibleMoves.push_back((43 + 11*(color-1))%44);
-                    possibleMoves.push_back((42 + 11*(color-1))%44);
-                    possibleMoves.push_back((41 + 11*(color-1))%44);
+                else if (selectedPawn == ((39 + 11*(color-1))%44)) {    //Ten away from home (shouldn't occur due to slide)
                     possibleMoves.push_back((40 + 11*(color-1))%44);
+                    possibleMoves.push_back((41 + 11*(color-1))%44);
+                    possibleMoves.push_back((42 + 11*(color-1))%44);
+                    possibleMoves.push_back((43 + 11*(color-1))%44);
+                    possibleMoves.push_back(0 + 11*(color-1));
+                    possibleMoves.push_back(1 + 11*(color-1));
+                    possibleMoves.push_back(49 + 9*(color-1));
                     checkSecondPawnDistance(Board, Player, 7, selectedPawn, possibleMoves);
                 }
                 else {
@@ -319,11 +319,13 @@ namespace logic {
                 else if ((selectedPawn >= (47 + 9*(color-1))) && (selectedPawn <= (49 + 9*(color-1)))) {   //Pawn in safety zone
                     break;
                 }
+                //Find all other pawns
                 for (int i = 0; i < 44; i++) {
                     if(Board->currentLocations[i] != color && Board->currentLocations[i] != 0) {
                         possibleMoves.push_back(i);
                     }
                 }
+                //Check if you can move forward 11 spaces
                 if (selectedPawn == ((37 + (11*(color-1))))%44) {  //If pawn is nine away from safety zone
                     possibleMoves.push_back(47 + (9*(color-1)));
                 }
@@ -344,10 +346,13 @@ namespace logic {
                     //If new location is already in possible moves, don't add it
                     for (int i = 0; i < possibleMoves.size(); i++) {
                         if (newLocation == possibleMoves[i]) {
+                            newLocation = -1;
                             break;
                         }
                     }
-                    possibleMoves.push_back(newLocation);
+                    if (newLocation != -1) {
+                        possibleMoves.push_back(newLocation);
+                    }
                 }
                 break;
             case 12:
@@ -410,7 +415,7 @@ namespace logic {
                         if ((otherPawnLocations[i] >= (44 + 9*(color-1))) && (otherPawnLocations[i] <= (52 + 9*(color-1)))) {    //If pawn is in home, safety zone, or start
                             strikes[j-1]++;
                         }
-                        else if (otherPawnLocations[i] == (0 + 11*(color-1))) { //If pawn is too close to home
+                        else if (otherPawnLocations[i] == (1 + 11*(color-1))) { //If pawn is too close to home
                             strikes[j-1]++;
                         }
                         else {
