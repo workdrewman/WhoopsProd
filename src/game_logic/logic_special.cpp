@@ -6,6 +6,7 @@
 #include "game_logic/logic_terminal.hpp"
 #include "rfid/rfid_scanner.hpp"
 #include "game_logic/logic_calculations.hpp"
+#include "led_control/led.hpp"
 #include <algorithm>
 #include <FastLED.h>
 
@@ -37,7 +38,7 @@ namespace logic {
         }
     }
 
-    void LogicSpecial::handleSeven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom) {
+    void LogicSpecial::handleSeven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom, TaskHandle_t led_task) {
         if (Scanner->lastChip == 7) {
             int color = Player->getPlayerColor(Player->currentPlayer);
             Serial.print("Place your pawn in a valid location: ");
@@ -51,6 +52,7 @@ namespace logic {
             }
             Board->currentLocations[location] = color;
             Board->currentLocations[movingFrom] = 0;
+            vTaskDelete(led_task); // turn off leds
             //Slide if on slide square
             int newLocation = Board->checkSlide(Player, location);
             int firstDistance = Calc->getDistance(Player, movingFrom, location);
@@ -62,12 +64,12 @@ namespace logic {
             Serial.print("Possible second pawn current locations(s): ");
             for (int i = 0; i < 44; i++) {
                 if (Board->currentLocations[i] == color && i != location && i != newLocation) {
-                    Serial.print(i + " ");
+                    Serial.printf("%d ", i);
                 }
             }
             for (int i = 0; i < kSafetyLocations.size(); i++) {
                 if (Board->currentLocations[kSafetyLocations[i]] == color && kSafetyLocations[i] != location) {
-                    Serial.print(kSafetyLocations[i] + " ");
+                    Serial.printf("%d ", kSafetyLocations[i]);
                 }
             }
             Serial.println();
@@ -80,15 +82,15 @@ namespace logic {
                 while (!Serial.available()) {}
                 secondPawnStart = readIntFromSerial();
             }
-            Serial.print("Move your second pawn " + String(secondDistance) + " spaces forward. Press any key to confirm:");
-            while (!Serial.available()) {}
-            Serial.read();
-            Board->currentLocations[secondPawnStart] = 0;
             moveSecondPawn(Board, Player, secondDistance, secondPawnStart);
         }
     }
 
     void LogicSpecial::moveSecondPawn(LogicBoard* Board, LogicPlayer* Player, int distance, int start) { // Need to finish
+        Serial.print("Move your second pawn " + String(distance) + " spaces forward. Press any key to confirm:");
+        Serial.read();
+        Board->currentLocations[start] = 0;
+        
         int color = Player->getPlayerColor(Player->currentPlayer);
         int location = start;
         for (int i = 0; i < distance; i++) {
@@ -111,7 +113,11 @@ namespace logic {
                 location++;
             }
         }
-
+        TaskHandle_t led_task = NULL;
+        led_control::indicate_moves({location}, color, location, &led_task);
+        while (!Serial.available()) {}
+        vTaskDelete(led_task); // turn off leds
+        
         //If piece hits other piece, send other piece back to start
         if (Board->currentLocations[location] != 0) {
             Serial.print("COLLISION: Send opponent's piece back to start. Press any key to confirm: ");

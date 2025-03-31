@@ -10,6 +10,8 @@
 #include <CRGB.h> // for CRGB
 #include <vector> // for vector
 
+class logic::LogicBoard;
+
 namespace led_control
 {
   /// @brief Method to indicate a move from one tile to another
@@ -28,6 +30,10 @@ namespace led_control
   void demo_move(int card_scanned);
   
   CRGB number_to_color(int color);
+
+  void showCorrectPositions(logic::LogicBoard* board);
+  void ledTask(void *pvParameters);
+  void indicate_moves(const vector<int>& possibleMoves, int color, int start_tile, TaskHandle_t* taskHandle);
 
 } //namespace led_control
 #endif // LED_CONTROL_H
