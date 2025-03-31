@@ -34,6 +34,6 @@ namespace led_control
   void showCorrectPositions(logic::LogicBoard* board);
   void ledTask(void *pvParameters);
   void indicate_moves(const vector<int>& possibleMoves, int color, int start_tile, TaskHandle_t* taskHandle);
-
+  void show_winner(int player_number);
 } //namespace led_control
 #endif // LED_CONTROL_H

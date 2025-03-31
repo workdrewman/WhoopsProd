@@ -58,7 +58,7 @@ namespace logic
             takeTurn();
         }
         Serial.println("Player " + String(Player.currentPlayer + 1) + " wins!");
-
+        led_control::showWinner(Player.currentPlayer + 1);
     }
 
     void LogicController::takeTurn() {
