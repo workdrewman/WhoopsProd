@@ -40,14 +40,19 @@ namespace logic {
         Serial.println("Get number of players: ");
         //Audio
         uint8_t lastChip = rfid::kInvalidCardName;
-        while (lastChip = Scanner->scanCard() != rfid::kInvalidCardName){}
+        while (lastChip == rfid::kInvalidCardName){
+            lastChip = Scanner->scanCard();
+        }
         while (lastChip < 2 || lastChip > 4) {
             //ERROR
             Serial.println("Invalid number of players");
             //Audio
             //Scan chip to get player count
             lastChip = rfid::kInvalidCardName;
-            while (lastChip = Scanner->scanCard() != rfid::kInvalidCardName){}
+            while (lastChip == rfid::kInvalidCardName)
+            {
+                lastChip = Scanner->scanCard();
+            }
         }
         playerCount = lastChip;
         lastChip = -1;
