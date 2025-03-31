@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "game_logic/logic_controller.hpp" // for LogicController
 
-#define NUM_LEDS 60
+#define NUM_LEDS 80
 #define DATA_PIN 13
 
 
