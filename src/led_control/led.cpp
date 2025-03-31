@@ -9,6 +9,12 @@
 #include "FastLED.h"
 #include <vector> // for vector
 
+#include "game_logic/logic_board.hpp" // for LogicBoard
+
+int start_pos;
+std::vector<int> possible_moves_led;
+CRGB led_color;
+
 namespace led_control
 {
 
@@ -108,6 +114,49 @@ CRGB number_to_color(int color)
     case 4:
       return CRGB::Blue;
   }
+}
+
+void showCorrectPositions(logic::LogicBoard* board) {
+  FastLED.clear();
+  FastLED.show();
+  for (int i = 0; i < logic::kBoardSize; i++) {
+      if (board->currentLocations[i] == 0) {
+          continue;
+      } else {
+          FastLED.leds()[i] = led_control::number_to_color(board->currentLocations[i]);
+      }
+  }
+  FastLED.show();
+}
+
+void ledTask(void *pvParameters) {        
+  while (1) {
+      // Serial.println("LED sequence running...");
+      FastLED.leds()[start_pos] = led_color;
+      for (int move : possible_moves_led) {
+          FastLED.leds()[move] = led_color;
+      }
+      FastLED.show();
+      vTaskDelay(pdMS_TO_TICKS(500));
+
+      for (int move : possible_moves_led) {
+          FastLED.leds()[move] = CRGB::Black;
+      }
+      FastLED.show();
+      vTaskDelay(pdMS_TO_TICKS(500));
+  }
+}
+
+void indicate_moves(const vector<int>& possibleMoves, int color, int start_tile, TaskHandle_t* taskHandle)
+{
+    possible_moves_led = possibleMoves;
+    led_color = led_control::number_to_color(color);
+    start_pos = start_tile;
+
+    FastLED.clear();
+    FastLED.show();
+    
+    xTaskCreate(led_control::ledTask, "LED Task", 4096, NULL, 1, taskHandle);
 }
 
 } // namespace led_control

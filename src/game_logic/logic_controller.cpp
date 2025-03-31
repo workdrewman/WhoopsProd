@@ -8,10 +8,6 @@
 
 using namespace std;
 
-int start_pos;
-std::vector<int> possible_moves_led;
-CRGB led_color;
-
 namespace logic
 {
     // //No chip yet: -1, Whoops!: 0, Other chips: 1-12
@@ -58,7 +54,7 @@ namespace logic
         while (!Board.allPiecesOnStart(&Player, &Terminal)) {};
 
         while (!Board.checkWinCondition(&Player)){
-            showCorrectPositions(&Board);
+            led_control::showCorrectPositions(&Board);
             takeTurn();
         }
         Serial.println("Player " + String(Player.currentPlayer + 1) + " wins!");
@@ -100,11 +96,11 @@ namespace logic
         
         // flash LEDs at potential move locations
         TaskHandle_t led_task = NULL;
-        indicate_moves(possibleMoves, Player.getPlayerColor(Player.currentPlayer), Calc.movingFrom, &led_task);
+        led_control::indicate_moves(possibleMoves, Player.getPlayerColor(Player.currentPlayer), Calc.movingFrom, &led_task);
         
         //handle whoops, 7s, and 11s
         Special.handleWhoops(&Scanner, &Board, &Player, &Calc, possibleMoves);
-        Special.handleSeven(&Scanner, &Board, &Player, &Calc, possibleMoves, Calc.movingFrom);
+        Special.handleSeven(&Scanner, &Board, &Player, &Calc, possibleMoves, Calc.movingFrom, led_task);
         Special.handleEleven(&Scanner, &Board, &Player, possibleMoves, Calc.movingFrom);
 
         //Place piece on new location
@@ -130,7 +126,7 @@ namespace logic
 
             //Slide if on slide square
             newLocation = Board.checkSlide(&Player, newLocation);
-        } else {
+        } else if (Scanner.lastChip == 0 || Scanner.lastChip == 11) {
             vTaskDelete(led_task); // turn off leds
         }
         
@@ -145,48 +141,5 @@ namespace logic
     //Next player, 4 players in total
     void LogicController::nextPlayer() {
         Player.currentPlayer = (Player.currentPlayer + 1) % Player.getPlayerCount();
-    }
-
-    void LogicController::indicate_moves(const vector<int>& possibleMoves, int color, int start_tile, TaskHandle_t* taskHandle)
-    {
-        possible_moves_led = possibleMoves;
-        led_color = led_control::number_to_color(color);
-        start_pos = start_tile;
-
-        FastLED.clear();
-        FastLED.show();
-        
-        xTaskCreate(ledTask, "LED Task", 4096, NULL, 1, taskHandle);
-    }
-
-    void ledTask(void *pvParameters) {        
-        while (1) {
-            // Serial.println("LED sequence running...");
-            FastLED.leds()[start_pos] = led_color;
-            for (int move : possible_moves_led) {
-                FastLED.leds()[move] = led_color;
-            }
-            FastLED.show();
-            vTaskDelay(pdMS_TO_TICKS(500));
-
-            for (int move : possible_moves_led) {
-                FastLED.leds()[move] = CRGB::Black;
-            }
-            FastLED.show();
-            vTaskDelay(pdMS_TO_TICKS(500));
-        }
-    }
-
-    void LogicController::showCorrectPositions(LogicBoard* board) {
-        FastLED.clear();
-        FastLED.show();
-        for (int i = 0; i < logic::kBoardSize; i++) {
-            if (board->currentLocations[i] == 0) {
-                continue;
-            } else {
-                FastLED.leds()[i] = led_control::number_to_color(board->currentLocations[i]);
-            }
-        }
-        FastLED.show();
     }
 }
