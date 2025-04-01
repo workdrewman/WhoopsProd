@@ -165,23 +165,19 @@ void showWinner(int player_number)
 {
   CRGB color = number_to_color(player_number);
   for (int itr=0; itr < 10; itr++) {
-    for (int tile=0; tile < kBoardSideLength+1; tile++){
+    for (int tile=0; tile < kBoardSideLength*2; tile++){
       for (int side=0; side < 2; side++) {
         FastLED.leds()[side*kBoardSideLength*2 + tile] = color;
-        FastLED.leds()[side*kBoardSideLength + tile + 11] = CRGB::Black;
+        FastLED.leds()[(side*kBoardSideLength*2 + tile + 10) % 44] = CRGB::Black;
         FastLED.show();
-        vTaskDelay(pdMS_TO_TICKS(100));
-      }
-    }
-    for (int tile=0; tile < kBoardSideLength+1; tile++){
-      for (int side=0; side < 2; side++) {
-        FastLED.leds()[side*kBoardSideLength*2 + tile] = CRGB::Black;
-        FastLED.leds()[side*kBoardSideLength + tile + 11] = color;
-        FastLED.show();
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(10));
       }
     }
   }
+  for (int i=0; i < 44; i++) {
+    FastLED.leds()[i] = color;
+  }
+  FastLED.show();
 }
 
 } // namespace led_control
