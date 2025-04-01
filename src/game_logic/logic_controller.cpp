@@ -4,6 +4,7 @@
 #include <iostream> // for std::cout and std::endl
 #include <algorithm> // for std::find
 #include <FastLED.h> // for LEDs
+#include "led_control/led.hpp" // for helper functions
 
 using namespace std;
 
@@ -52,7 +53,12 @@ namespace logic
         Serial.println("Please place pieces on start locations");
         while (!Board.allPiecesOnStart(&Player, &Terminal)) {};
 
-        takeTurn();
+        while (!Board.checkWinCondition(&Player)){
+            led_control::showCorrectPositions(&Board);
+            takeTurn();
+        }
+        Serial.println("Player " + String(Player.currentPlayer + 1) + " wins!");
+        led_control::showWinner(Player.currentPlayer + 1);
     }
 
     void LogicController::takeTurn() {
@@ -60,8 +66,17 @@ namespace logic
         Serial.println();
         //Scan chip
         Serial.println("Draw and scan a chip");
-        Scanner.lastChip = Scanner.scanCard();
+        
+        uint8_t scan_val = rfid::kInvalidCardName;
+        while (scan_val == rfid::kInvalidCardName)
+        {
+            scan_val = Scanner.scanCard();
+        }        Scanner.lastChip = scan_val;
         Terminal.t_displayChipInstructions(&Scanner);
+        
+        // Stop showing where all pieces should be
+        FastLED.clear();
+        FastLED.show();
 
         //Pick up a piece
         Terminal.t_selectPiece(&Board, &Player, &Calc, Scanner.lastChip);
@@ -72,27 +87,35 @@ namespace logic
         if (possibleMoves.size() == 0) {
             Serial.println("No possible moves");
             nextPlayer();
-            takeTurn();
+            return;
         }
+
         Serial.print("Possible moves: ");
         for (int i = 0; i < possibleMoves.size(); i++) {
-            Serial.print(possibleMoves[i] + " ");
+            Serial.printf("%d ", possibleMoves[i]);
         }
         Serial.println();
-
+        
+        // flash LEDs at potential move locations
+        TaskHandle_t led_task = NULL;
+        led_control::indicate_moves(possibleMoves, Player.getPlayerColor(Player.currentPlayer), Calc.movingFrom, &led_task);
+        
         //handle whoops, 7s, and 11s
         Special.handleWhoops(&Scanner, &Board, &Player, &Calc, possibleMoves);
-        Special.handleSeven(&Scanner, &Board, &Player, &Calc, possibleMoves, Calc.movingFrom);
+        Special.handleSeven(&Scanner, &Board, &Player, &Calc, possibleMoves, Calc.movingFrom, led_task);
         Special.handleEleven(&Scanner, &Board, &Player, possibleMoves, Calc.movingFrom);
+
         //Place piece on new location
         int newLocation;
         if (!(Scanner.lastChip == 0 || Scanner.lastChip == 7 || Scanner.lastChip == 11)) {
             Serial.print("Select a location to move to: ");
-            newLocation = stoi((Serial.readStringUntil('\n').c_str()));
+            newLocation = readIntFromSerial();
             while (find(possibleMoves.begin(), possibleMoves.end(), newLocation) == possibleMoves.end()) {
                 Serial.print("Invalid location, please select a valid location: ");
-                newLocation = stoi(Serial.readStringUntil('\n').c_str());
+                newLocation = readIntFromSerial();
             }
+            vTaskDelete(led_task); // turn off leds
+            Serial.printf("\nMoving player %d's piece %d ----> %d\n", Player.currentPlayer + 1, Calc.movingFrom, newLocation);
             //If piece hits other piece, send other piece back to start
             if (Board.currentLocations[newLocation] != 0) {
                 Serial.print("COLLISION: Send opponent's piece back to start. Press any key to confirm: ");
@@ -105,13 +128,15 @@ namespace logic
 
             //Slide if on slide square
             newLocation = Board.checkSlide(&Player, newLocation);
+        } else if (Scanner.lastChip == 0 || Scanner.lastChip == 11) {
+            vTaskDelete(led_task); // turn off leds
         }
         
         if (Board.checkWinCondition(&Player)) {
-            Serial.println("Player " + String(Player.currentPlayer + 1) + " wins!");
+            return;
         } else {
             nextPlayer();
-            takeTurn();
+            return;
         }
     }
 

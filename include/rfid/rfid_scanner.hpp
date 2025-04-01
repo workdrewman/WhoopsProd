@@ -76,6 +76,9 @@ class RfidScanner{
   /// @param bufferSize size of the buffer
   void printDec(byte *buffer, byte bufferSize);
 
+  void resetScanner();
+  void powerCycleScanner();
+
   MFRC522 _rfid_scanner;
 };
 

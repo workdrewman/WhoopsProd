@@ -6,6 +6,7 @@
 #include "rfid/rfid_scanner.hpp"
 #include "game_logic/logic_calculations.hpp"
 #include "game_logic/logic_special.hpp"
+#include "led_control/led.hpp"
 #include <FastLED.h>
 #include <algorithm>
 
@@ -99,7 +100,7 @@ namespace logic {
             if (Board->currentLocations[i] == color) {
                 possibleMoves = Calc->findPossibleMoves(Board, Player, i, chip);
                 if (possibleMoves.size() != 0) {
-                    Serial.print(i + " ");
+                    Serial.printf("%d ",i);
                     validPieces.push_back(i);
                 }
             }
@@ -112,14 +113,42 @@ namespace logic {
         }
         int location;
         Serial.print("Select a location to move " + String(Player->currentPlayer + 1) + "'s piece from: ");
-        location = stoi(Serial.readStringUntil('\n').c_str());
+        location = readIntFromSerial();
         //While location is not in validPieces
         while (find(validPieces.begin(), validPieces.end(), location) == validPieces.end()) {
             Serial.println("Invalid piece");
             Serial.print("Select a piece to move: ");
-            location = stoi(Serial.readStringUntil('\n').c_str());
+            location = readIntFromSerial();
         }
         Calc->movingFrom = location;
         //setPlayerColor();
     }
+
+    int readIntFromSerial() {
+        while (true) {            
+            // Wait for user input
+            while (!Serial.available()) {
+                delay(10);  // Avoids busy-waiting
+            }
+    
+            String input = Serial.readStringUntil('\n');  // Read the input
+            input.trim();  // Remove leading/trailing spaces or newlines
+    
+            if (input.length() == 0) {  // Check if input is empty
+                Serial.println("Error: No input received. Try again.");
+                continue;
+            }
+    
+            char *end;
+            long number = strtol(input.c_str(), &end, 10);  // Convert safely
+    
+            if (*end != '\0') {  // Check if the input was a valid number
+                Serial.println("Error: Invalid input. Please enter a valid integer.");
+                continue;
+            }
+    
+            return static_cast<int>(number);  // Return the valid integer
+        }
+    }
+    
 }
