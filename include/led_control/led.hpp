@@ -9,8 +9,12 @@
 
 #include <CRGB.h> // for CRGB
 #include <vector> // for vector
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h> // for TaskHandle_t
 
-class logic::LogicBoard;
+namespace logic {
+  class LogicBoard;
+}
 
 namespace led_control
 {
@@ -33,7 +37,7 @@ namespace led_control
 
   void showCorrectPositions(logic::LogicBoard* board);
   void ledTask(void *pvParameters);
-  void indicate_moves(const vector<int>& possibleMoves, int color, int start_tile, TaskHandle_t* taskHandle);
+  void indicate_moves(const std::vector<int>& possibleMoves, int color, int start_tile, TaskHandle_t* taskHandle);
   void showWinner(int player_number);
 } //namespace led_control
 #endif // LED_CONTROL_H
