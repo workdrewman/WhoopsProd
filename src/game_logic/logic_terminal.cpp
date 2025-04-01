@@ -114,7 +114,8 @@ namespace logic {
         int location;
         Serial.print("Select a location to move " + String(Player->currentPlayer + 1) + "'s piece from: ");
         location = readIntFromSerial();
-        while (Board->currentLocations[location] != color) {
+        //While location is not in validPieces
+        while (find(validPieces.begin(), validPieces.end(), location) == validPieces.end()) {
             Serial.println("Invalid piece");
             Serial.print("Select a piece to move: ");
             location = readIntFromSerial();
