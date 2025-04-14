@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "rfid/rfid_scanner.hpp"
+#include "piece_detection/piece_detection.hpp"
 
 using namespace std;
 
@@ -17,10 +18,10 @@ namespace logic {
     class LogicSpecial {
         public:
             LogicSpecial();
-            void handleWhoops(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves);
-            void handleSeven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom, TaskHandle_t led_task);
+            void handleWhoops(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, piece_detection::PieceDetection* pieceDetection);
+            void handleSeven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom, TaskHandle_t led_task, piece_detection::PieceDetection* pieceDetection);
             void moveSecondPawn(LogicBoard* Board, LogicPlayer* Player, int distance, int start);
-            void handleEleven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, vector<int> possibleMoves, int movingFrom);
+            void handleEleven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, vector<int> possibleMoves, int movingFrom, piece_detection::PieceDetection* pieceDetection);
     };
 }
 

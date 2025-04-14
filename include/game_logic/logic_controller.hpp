@@ -18,6 +18,7 @@
 #include "logic_calculations.hpp"
 #include "logic_terminal.hpp"
 #include "rfid/rfid_scanner.hpp"
+#include "piece_detection/piece_detection.hpp"
 
 #include <FastLED.h> // for LEDs
 #include <vector> // for std::vector
@@ -38,6 +39,7 @@ namespace logic
             LogicCalculations Calc;
             LogicTerminal Terminal;
             rfid::RfidScanner Scanner;
+            piece_detection::PieceDetection pieceDetection;
             
         public:
             LogicController();

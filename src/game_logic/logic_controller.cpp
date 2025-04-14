@@ -5,6 +5,7 @@
 #include <algorithm> // for std::find
 #include <FastLED.h> // for LEDs
 #include "led_control/led.hpp" // for helper functions
+#include "piece_detection/piece_detection.hpp" // for PieceDetection
 
 using namespace std;
 
@@ -35,10 +36,31 @@ namespace logic
     // // 77-79: Blue's Start
 
     LogicController::LogicController()
-    : Player(), Board(), Special(), Calc(), Terminal(), Scanner() {
-    }
+    : Player(), Board(), Special(), Calc(), Terminal(), Scanner(), pieceDetection{6} {
+    }  
 
     void LogicController::startGame() {
+        // Setup the piece detection with correct modes
+        pieceDetection.initMCP23017();
+
+        // Launch piece detection task
+        // Create the FreeRTOS task
+        xTaskCreate(
+            [](void* pvParameters) {
+            auto* pieceDetectionPtr = static_cast<decltype(this->pieceDetection)*>(pvParameters);
+            while (true) {
+                pieceDetectionPtr->readMCPInputs();
+                vTaskDelay(pdMS_TO_TICKS(50));
+            }
+            },   // Task function
+            "ReadMCPInputs",     // Name of the task
+            2048,                // Stack size (in words, not bytes)
+            &pieceDetection,     // Task input parameter
+            1,                   // Priority of the task
+            NULL                 // Task handle
+        );
+
+
         Serial.println("Setup Complete");
         Serial.println("Press any key to start game");
         while (!Serial.available()) {}
@@ -51,10 +73,14 @@ namespace logic
 
         //code to ensure setup is done correctly
         Serial.println("Please place pieces on start locations");
-        while (!Board.allPiecesOnStart(&Player, &Terminal)) {};
+        while (!Board.allPiecesOnStart(&Player, &Terminal, &pieceDetection)) {};
 
         while (!Board.checkWinCondition(&Player)){
             led_control::showCorrectPositions(&Board);
+            if (pieceDetection.hasChangedSensor()) {
+                // dump the changes... they can figure it out
+                pieceDetection.getChangedSensors();
+            }
             takeTurn();
         }
         Serial.println("Player " + String(Player.currentPlayer + 1) + " wins!");
@@ -79,7 +105,7 @@ namespace logic
         FastLED.show();
 
         //Pick up a piece
-        Terminal.t_selectPiece(&Board, &Player, &Calc, Scanner.lastChip);
+        Terminal.t_selectPiece(&Board, &Player, &Calc, Scanner.lastChip, &pieceDetection);
 
         //Light leds of possible moves
         vector<int> possibleMoves = Calc.findPossibleMoves(&Board, &Player, Calc.movingFrom, Scanner.lastChip);
@@ -101,21 +127,25 @@ namespace logic
         led_control::indicate_moves(possibleMoves, Player.getPlayerColor(Player.currentPlayer), Calc.movingFrom, &led_task);
         
         //handle whoops, 7s, and 11s
-        Special.handleWhoops(&Scanner, &Board, &Player, &Calc, possibleMoves);
-        Special.handleSeven(&Scanner, &Board, &Player, &Calc, possibleMoves, Calc.movingFrom, led_task);
-        Special.handleEleven(&Scanner, &Board, &Player, possibleMoves, Calc.movingFrom);
+        Special.handleWhoops(&Scanner, &Board, &Player, &Calc, possibleMoves, &pieceDetection);
+        Special.handleSeven(&Scanner, &Board, &Player, &Calc, possibleMoves, Calc.movingFrom, led_task, &pieceDetection);
+        Special.handleEleven(&Scanner, &Board, &Player, possibleMoves, Calc.movingFrom, &pieceDetection);
 
         //Place piece on new location
         int newLocation;
         if (!(Scanner.lastChip == 0 || Scanner.lastChip == 7 || Scanner.lastChip == 11)) {
             Serial.print("Select a location to move to: ");
-            newLocation = readIntFromSerial();
+            while (!pieceDetection.hasChangedSensor()) {} // wait until player chooses a piece
+            newLocation = piece_detection::kSensorMap.at(pieceDetection.getChangedSensors().at(0));
+
             while (find(possibleMoves.begin(), possibleMoves.end(), newLocation) == possibleMoves.end()) {
                 Serial.print("Invalid location, please select a valid location: ");
-                newLocation = readIntFromSerial();
+                while (!pieceDetection.hasChangedSensor()) {} // wait until player chooses a piece
+                newLocation = piece_detection::kSensorMap.at(pieceDetection.getChangedSensors().at(0));
             }
             vTaskDelete(led_task); // turn off leds
             Serial.printf("\nMoving player %d's piece %d ----> %d\n", Player.currentPlayer + 1, Calc.movingFrom, newLocation);
+
             //If piece hits other piece, send other piece back to start
             if (Board.currentLocations[newLocation] != 0) {
                 Serial.print("COLLISION: Send opponent's piece back to start. Press any key to confirm: ");

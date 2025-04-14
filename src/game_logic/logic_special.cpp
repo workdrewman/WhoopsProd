@@ -14,17 +14,17 @@
 namespace logic {
     LogicSpecial::LogicSpecial() {}
 
-    void LogicSpecial::handleWhoops(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves) {
+    void LogicSpecial::handleWhoops(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, piece_detection::PieceDetection* pieceDetection) {
         if (Scanner->lastChip == 0) {
             int opponentPawn;
             Serial.print("Select an opponent's pawn to send back to start: ");
-            while (!Serial.available()) {}
-            opponentPawn = readIntFromSerial();
+            while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
+            opponentPawn = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
             while (find(possibleMoves.begin(), possibleMoves.end(), opponentPawn) == possibleMoves.end()) {
                 Serial.println("Invalid pawn");
                 Serial.print("Select an opponent's pawn to send back to start: ");
-                while (!Serial.available()) {}
-                opponentPawn = readIntFromSerial();
+                while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
+                opponentPawn = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
             }
             int opponentColor = Board->currentLocations[opponentPawn];
             Board->currentLocations[Board->findNextOpenStart(opponentColor)] = opponentColor;
@@ -38,21 +38,26 @@ namespace logic {
         }
     }
 
-    void LogicSpecial::handleSeven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom, TaskHandle_t led_task) {
+    void LogicSpecial::handleSeven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom, TaskHandle_t led_task, piece_detection::PieceDetection* pieceDetection) {
         if (Scanner->lastChip == 7) {
             int color = Player->getPlayerColor(Player->currentPlayer);
             Serial.print("Place your pawn in a valid location: ");
-            while (!Serial.available()) {}
-            int location = readIntFromSerial();
+            while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
+            int location = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
             while (find(possibleMoves.begin(), possibleMoves.end(), location) == possibleMoves.end()) {
                 Serial.println("Invalid location");
                 Serial.print("Place your pawn in a valid location: ");
-                while (!Serial.available()) {}
-                location = readIntFromSerial();
+                while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
+                location = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
             }
             Board->currentLocations[location] = color;
             Board->currentLocations[movingFrom] = 0;
-            vTaskDelete(led_task); // turn off leds
+            
+            // turn off leds
+            vTaskDelete(led_task); 
+            FastLED.clear();
+            FastLED.show();
+
             //Slide if on slide square
             int newLocation = Board->checkSlide(Player, location);
             int firstDistance = Calc->getDistance(Player, movingFrom, location);
@@ -74,21 +79,20 @@ namespace logic {
             }
             Serial.println();
             Serial.print("Select a pawn location to move from: ");
-            while (!Serial.available()) {}
-            int secondPawnStart = readIntFromSerial();
+            while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
+            int secondPawnStart = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
             while (Board->currentLocations[secondPawnStart] != color) {
                 Serial.println("Invalid pawn");
                 Serial.print("Select a pawn to move: ");
-                while (!Serial.available()) {}
-                secondPawnStart = readIntFromSerial();
+                while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
+                secondPawnStart = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
             }
             moveSecondPawn(Board, Player, secondDistance, secondPawnStart);
         }
     }
 
     void LogicSpecial::moveSecondPawn(LogicBoard* Board, LogicPlayer* Player, int distance, int start) { // Need to finish
-        Serial.print("Move your second pawn " + String(distance) + " spaces forward. Press any key to confirm:");
-        Serial.read();
+        Serial.print("Move your second pawn " + String(distance) + " spaces forward.");
         Board->currentLocations[start] = 0;
         
         int color = Player->getPlayerColor(Player->currentPlayer);
@@ -114,9 +118,11 @@ namespace logic {
             }
         }
         TaskHandle_t led_task = NULL;
-        led_control::indicate_moves({location}, color, location, &led_task);
+        led_control::indicate_moves({location}, color, start, &led_task);
         while (!Serial.available()) {}
         vTaskDelete(led_task); // turn off leds
+        FastLED.clear();
+        FastLED.show();
         
         //If piece hits other piece, send other piece back to start
         if (Board->currentLocations[location] != 0) {
@@ -131,19 +137,19 @@ namespace logic {
         location = Board->checkSlide(Player, location);
     }
 
-    void LogicSpecial::handleEleven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, vector<int> possibleMoves, int movingFrom) {
+    void LogicSpecial::handleEleven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, vector<int> possibleMoves, int movingFrom, piece_detection::PieceDetection* pieceDetection) {
         if (Scanner->lastChip == 11) {
             int color = Player->getPlayerColor(Player->currentPlayer);
             int endLocation;
             Serial.println("Select an opponent's pawn to send back to swap with or move forward 11 spaces");
             Serial.print("Enter the oppoents's pawn location or the location you are moving to: ");
-            while (!Serial.available()) {}
-            endLocation = readIntFromSerial();
+            while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
+            endLocation = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
             while (find(possibleMoves.begin(), possibleMoves.end(), endLocation) == possibleMoves.end()) {
                 Serial.println("Invalid location");
                 Serial.print("Enter the oppoents's pawn location or the location you are moving to: ");
-                while (!Serial.available()) {}
-                endLocation = readIntFromSerial();
+                while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
+                endLocation = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
             }
             if (Board->currentLocations[endLocation] == 0) {
                 Board->currentLocations[endLocation] = color;

@@ -92,7 +92,7 @@ namespace logic {
         Serial.println();
     }
 
-    void LogicTerminal::t_selectPiece(LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, int chip) {
+    void LogicTerminal::t_selectPiece(LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, int chip, piece_detection::PieceDetection* pieceDetection) {
         int color = Player->getPlayerColor(Player->currentPlayer);
         Serial.print("Player " + String(Player->currentPlayer + 1) + "'s pieces: ");
         vector<int> possibleMoves, validPieces;
@@ -113,12 +113,16 @@ namespace logic {
         }
         int location;
         Serial.print("Select a location to move " + String(Player->currentPlayer + 1) + "'s piece from: ");
-        location = readIntFromSerial();
+        while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
+        location = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
+
         //While location is not in validPieces
         while (find(validPieces.begin(), validPieces.end(), location) == validPieces.end()) {
             Serial.println("Invalid piece");
             Serial.print("Select a piece to move: ");
-            location = readIntFromSerial();
+
+            while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
+            location = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
         }
         Calc->movingFrom = location;
         //setPlayerColor();

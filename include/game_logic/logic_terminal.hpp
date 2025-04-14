@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "rfid/rfid_scanner.hpp"
+#include "piece_detection/piece_detection.hpp"
 
 namespace logic {
     class LogicBoard;
@@ -18,7 +19,7 @@ namespace logic {
             int t_GetChip();
             int t_setStartAreas(LogicBoard* Board, LogicPlayer* Player);
             void t_displayChipInstructions(rfid::RfidScanner* Scanner);
-            void t_selectPiece(LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, int chip);
+            void t_selectPiece(LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, int chip, piece_detection::PieceDetection* pieceDetection);
     };
     int readIntFromSerial();
 }

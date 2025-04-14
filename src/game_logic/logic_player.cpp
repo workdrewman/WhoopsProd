@@ -16,19 +16,20 @@ namespace logic {
         return playerColors[playerIndex];
     }
 
-    //POSSIBLE BUG: if player picks up a piece that already has a color
     void LogicPlayer::setPlayerColor(int movingFrom, int color, int player) {
-        if (movingFrom >= 50 && movingFrom <= 52) {
-            color = 1;    //Yellow
-        } else if (movingFrom >= 59 && movingFrom <= 61) {
-            color = 2;    //Green
-        } else if (movingFrom >= 68 && movingFrom <= 70) {
-            color = 3;    //Red
-        } else if (movingFrom >= 77 && movingFrom <= 79) {
-            color = 4;    //Blue
-        }
+        if (playerColors[player] != 0) {
+            if (movingFrom >= 50 && movingFrom <= 52) {
+                color = 1;    //Yellow
+            } else if (movingFrom >= 59 && movingFrom <= 61) {
+                color = 2;    //Green
+            } else if (movingFrom >= 68 && movingFrom <= 70) {
+                color = 3;    //Red
+            } else if (movingFrom >= 77 && movingFrom <= 79) {
+                color = 4;    //Blue
+            }
 
-        playerColors[player] = color;
+            playerColors[player] = color;
+        }
     }
 
     int LogicPlayer::getPlayerCount() {

@@ -3,6 +3,7 @@
 #include "game_logic/logic_board.hpp"
 #include "game_logic/logic_player.hpp"
 #include "game_logic/logic_terminal.hpp"
+#include "piece_detection/piece_detection.hpp"
 #include <algorithm>
 #include <FastLED.h>
 
@@ -182,22 +183,64 @@ namespace logic {
         return count == MAX_PIECES;
     }
 
-    bool LogicBoard::allPiecesOnStart(LogicPlayer* Player, LogicTerminal* Terminal) {
+    bool LogicBoard::allPiecesOnStart(LogicPlayer* Player, LogicTerminal* Terminal, piece_detection::PieceDetection* pieceDetection) {
         int numberOfFilledAreas = 0;
+        // auto data = pieceDetection->getDataCopy();
+        pieceDetection->updateBoard(this); // update the currentLocations by reading all sensors
+        pieceDetection->getChangedSensors(); // clear the changed sensors
+
+        // for (int i = 0; i < 80; i++) {
+        //     Serial.printf("%d = %d, ", i, currentLocations[i]);
+        // }
+        // Serial.println();
+
         //Check if 50, 51, 52 occupied
         //If true increment numberOfFilledAreas
-
+        if (currentLocations[50] && currentLocations[51] && currentLocations[52]) {
+            numberOfFilledAreas++;
+            Serial.println("Yellow good");
+            currentLocations[50] = 1;
+            currentLocations[51] = 1;
+            currentLocations[52] = 1;
+            Player->playerColors[0] = 1;
+        }
+        
         //Check if 59, 60, 61 occupied
         //If true increment numberOfFilledAreas
+        if (currentLocations[59] && currentLocations[60] && currentLocations[61]) {
+            numberOfFilledAreas++;
+            Serial.println("Red good");
+            currentLocations[59] = 2;
+            currentLocations[60] = 2;
+            currentLocations[61] = 2;
+            Player->playerColors[1] = 2;
+        }
 
+        
         //Check if 68, 69, 70 occupied
         //If true increment numberOfFilledAreas
-
+        if (currentLocations[68] && currentLocations[69] && currentLocations[70]) {
+            numberOfFilledAreas++;
+            Serial.println("Green good");
+            currentLocations[68] = 3;
+            currentLocations[69] = 3;
+            currentLocations[70] = 3;
+            Player->playerColors[2] = 3;
+        }
+        
         //Check if 77, 78, 79 occupied
         //If true increment numberOfFilledAreas
-
+        if (currentLocations[77] && currentLocations[78] && currentLocations[79]) {
+            numberOfFilledAreas++;
+            Serial.println("Blue good");
+            currentLocations[77] = 4;
+            currentLocations[78] = 4;
+            currentLocations[79] = 4;
+            Player->playerColors[3] = 4;
+        }
+        
         //For terminal testing
-        numberOfFilledAreas = Terminal->t_setStartAreas(this, Player);
+        // numberOfFilledAreas = Terminal->t_setStartAreas(this, Player);
 
         if (numberOfFilledAreas >= Player->getPlayerCount()) {
             return true;

@@ -6,6 +6,10 @@
 
 using namespace std;
 
+namespace piece_detection {
+    class PieceDetection;
+}
+
 namespace logic {
     class LogicPlayer;
     class LogicTerminal;
@@ -40,7 +44,7 @@ namespace logic {
             int checkSlide(LogicPlayer* Player, int location);
 
             bool allPiecesPlaced();
-            bool allPiecesOnStart(LogicPlayer* Player, LogicTerminal* Terminal);
+            bool allPiecesOnStart(LogicPlayer* Player, LogicTerminal* Terminal, piece_detection::PieceDetection* pieceDetection);
     };
 }
 
