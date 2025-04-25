@@ -75,7 +75,7 @@ namespace logic
         Serial.println("Please place pieces on start locations");
         TaskHandle_t startPosLights = NULL;
         led_control::showStartPositions(Player.getPlayerCount(), &startPosLights);
-        while (!Board.allPiecesOnStart(&Player, &Terminal, &pieceDetection)) {vTaskDelay(500 / portTICK_PERIOD_MS);};
+        while (!Board.allPiecesOnStart(&Player, &Terminal, &pieceDetection)) {vTaskDelay(pdMS_TO_TICKS(500));};
         vTaskDelete(startPosLights); // turn off leds
 
         while (!Board.checkWinCondition(&Player)){
@@ -158,7 +158,7 @@ namespace logic
             Board.currentLocations[Calc.movingFrom] = 0;
 
             //Slide if on slide square
-            newLocation = Board.checkSlide(&Player, newLocation);
+            newLocation = Board.checkSlide(&Player, newLocation, &pieceDetection);
         } else if (Scanner.lastChip == 0 || Scanner.lastChip == 11) {
             vTaskDelete(led_task); // turn off leds
         }

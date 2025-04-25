@@ -52,11 +52,11 @@ void indicate_move(std::vector<int> indexes, CRGB color)
     FastLED.leds()[indexes[i]] = color;
     FastLED.leds()[indexes[i]].fadeLightBy(200);
     FastLED.show();
-    FastLED.delay(75);
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
   FastLED.leds()[indexes[indexes.size()-2]].fadeLightBy(230);
   FastLED.leds()[indexes[indexes.size()-1]].fadeLightBy(200);
-  FastLED.delay(75);
+  vTaskDelay(pdMS_TO_TICKS(100));
   FastLED.show();
   FastLED.clear();
   FastLED.show();
@@ -189,8 +189,51 @@ void prvShowStartPositions(void *pvParameters) {
   }
 }
 
+void slidePiece(SlideStruct slide, TaskHandle_t* taskHandle) {
+  xTaskCreate(
+    led_control::prvShowStartPositions,
+    "Show Start Positions",
+    2048,
+    &slide,
+    1,
+    taskHandle
+  );
+}
+
+void prvShowSlide(void *pvParameters) {
+  SlideStruct* slide = static_cast<SlideStruct*>(pvParameters);
+  std::vector<int> indexes;
+  for (int i = slide->start_location; i <= slide->end_location; ++i) {
+    indexes.push_back(i);
+  }
+  CRGB color = number_to_color(slide->color);
+  
+  while(1) {
+    FastLED.leds()[indexes[0]] = color;
+    for (int i = 0; i < indexes.size(); ++i) {
+      if (i >= 2) {
+        FastLED.leds()[indexes[i-2]].fadeLightBy(230);
+        FastLED.leds()[indexes[i-1]].fadeLightBy(200);
+      }
+      FastLED.leds()[indexes[i]] = color;
+      FastLED.leds()[indexes[i]].fadeLightBy(200);
+      FastLED.show();
+      vTaskDelay(pdMS_TO_TICKS(100));
+    }
+    FastLED.leds()[indexes[indexes.size()-2]].fadeLightBy(230);
+    FastLED.leds()[indexes[indexes.size()-1]].fadeLightBy(200);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    FastLED.show();
+    FastLED.clear();
+
+    FastLED.show();
+  }
+}
+
 void showWinner(int player_number)
 {
+  FastLED.clear();
+  FastLED.show();
   CRGB color = number_to_color(player_number);
   for (int itr=0; itr < 10; itr++) {
     for (int tile=0; tile < kBoardSideLength*2; tile++){

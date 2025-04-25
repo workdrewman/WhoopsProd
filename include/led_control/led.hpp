@@ -18,6 +18,12 @@ namespace logic {
 
 namespace led_control
 {
+  struct SlideStruct {
+    int start_location;
+    int end_location;
+    int color;
+  };
+
   /// @brief Method to indicate a move from one tile to another
   /// @param from Index of the current tile
   /// @param to Index of the tile to move to
@@ -41,5 +47,7 @@ namespace led_control
   void showWinner(int player_number);
   void showStartPositions(int num_players, TaskHandle_t* taskHandle);
   void prvShowStartPositions(void *pvParameters);
+  void slidePiece(SlideStruct slide, TaskHandle_t* taskHandle);
+
 } //namespace led_control
 #endif // LED_CONTROL_H

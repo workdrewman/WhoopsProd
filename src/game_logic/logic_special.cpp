@@ -31,7 +31,7 @@ namespace logic {
             Board->currentLocations[opponentPawn] = Player->getPlayerColor(Player->currentPlayer);
             Board->currentLocations[Calc->movingFrom] = 0;
             //Slide if on slide square
-            int newLocation = Board->checkSlide(Player, opponentPawn);
+            int newLocation = Board->checkSlide(Player, opponentPawn, pieceDetection);
             Serial.println("Opponent's pawn has been sent back to start and your pawn has been set in their previous location.");
         }
     }
@@ -57,7 +57,7 @@ namespace logic {
             FastLED.show();
 
             //Slide if on slide square
-            int newLocation = Board->checkSlide(Player, location);
+            int newLocation = Board->checkSlide(Player, location, pieceDetection);
             int firstDistance = Calc->getDistance(Player, movingFrom, location);
             int secondDistance = 7 - firstDistance;
             if (secondDistance == 0) {
@@ -85,11 +85,11 @@ namespace logic {
                 while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
                 secondPawnStart = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
             }
-            moveSecondPawn(Board, Player, secondDistance, secondPawnStart);
+            moveSecondPawn(Board, Player, secondDistance, secondPawnStart, pieceDetection);
         }
     }
 
-    void LogicSpecial::moveSecondPawn(LogicBoard* Board, LogicPlayer* Player, int distance, int start) { // Need to finish
+    void LogicSpecial::moveSecondPawn(LogicBoard* Board, LogicPlayer* Player, int distance, int start, piece_detection::PieceDetection* pieceDetection) { // Need to finish
         Serial.print("Move your second pawn " + String(distance) + " spaces forward.");
         Board->currentLocations[start] = 0;
         
@@ -130,7 +130,7 @@ namespace logic {
         Board->currentLocations[location] = color;
         Board->currentLocations[start] = 0;
         //Slide if on slide square
-        location = Board->checkSlide(Player, location);
+        location = Board->checkSlide(Player, location, pieceDetection);
     }
 
     void LogicSpecial::handleEleven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, vector<int> possibleMoves, int movingFrom, piece_detection::PieceDetection* pieceDetection) {
@@ -150,7 +150,7 @@ namespace logic {
             if (Board->currentLocations[endLocation] == 0) {
                 Board->currentLocations[endLocation] = color;
                 //Slide if on slide square
-                endLocation = Board->checkSlide(Player, endLocation);
+                endLocation = Board->checkSlide(Player, endLocation, pieceDetection);
                 Board->currentLocations[movingFrom] = 0;
             } 
             else if (endLocation == (movingFrom + 11)%44) {
@@ -158,17 +158,17 @@ namespace logic {
                 Board->currentLocations[Board->findNextOpenStart(Board->currentLocations[endLocation])] = Board->currentLocations[endLocation];
                 Board->currentLocations[endLocation] = color;
                 //Slide if on slide square
-                endLocation = Board->checkSlide(Player, endLocation);
+                endLocation = Board->checkSlide(Player, endLocation, pieceDetection);
                 Board->currentLocations[movingFrom] = 0;
             }
             else {
                 int opponentColor = Board->currentLocations[endLocation];
                 Board->currentLocations[movingFrom] = opponentColor;
                 //Slide if on slide square
-                int opponentPosition = Board->checkSlide(Player, movingFrom);
+                int opponentPosition = Board->checkSlide(Player, movingFrom, pieceDetection);
                 Board->currentLocations[endLocation] = color;
                 //Slide if on slide square
-                endLocation = Board->checkSlide(Player, endLocation);
+                endLocation = Board->checkSlide(Player, endLocation, pieceDetection);
                 Serial.print("Opponent's pawn swapped with your pawn.");
             }
         }
