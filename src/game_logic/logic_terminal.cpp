@@ -111,6 +111,11 @@ namespace logic {
             Calc->movingFrom = -1;
             return;
         }
+
+        // indicate which pieces can move
+        TaskHandle_t led_task = NULL;
+        led_control::indicate_moves(validPieces, Player->getPlayerColor(Player->currentPlayer), 255, &led_task);
+
         int location;
         Serial.print("Select a location to move " + String(Player->currentPlayer + 1) + "'s piece from: ");
         while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
@@ -124,6 +129,9 @@ namespace logic {
             while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
             location = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
         }
+
+        // Turn off led after the correct piece is chosen
+        vTaskDelete(led_task);
         Calc->movingFrom = location;
         //setPlayerColor();
     }

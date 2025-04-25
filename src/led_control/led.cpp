@@ -134,7 +134,9 @@ void showCorrectPositions(logic::LogicBoard* board) {
 void ledTask(void *pvParameters) {        
   while (1) {
       // Serial.println("LED sequence running...");
-      FastLED.leds()[start_pos] = led_color;
+      if (start_pos < 80) {
+        FastLED.leds()[start_pos] = led_color;
+      }
       for (int move : possible_moves_led) {
           FastLED.leds()[move] = led_color;
       }
