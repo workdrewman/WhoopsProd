@@ -14,6 +14,8 @@
 int start_pos;
 std::vector<int> possible_moves_led;
 CRGB led_color;
+int g_num_players = 0;
+led_control::SlideStruct g_slide;
 
 namespace led_control
 {
@@ -163,10 +165,10 @@ void indicate_moves(const vector<int>& possibleMoves, int color, int start_tile,
     xTaskCreate(led_control::ledTask, "LED Task", 2048, NULL, 1, taskHandle);
 }
 
-void showPlayerPositions(int player_number, TaskHandle_t* taskHandle, logic::LogicBoard* board) {
+void showPlayerPositions(int player_number, TaskHandle_t* taskHandle, const logic::LogicBoard& board) {
   possible_moves_led = {};
   for (int i = 0; i < logic::kBoardSize; i++) {
-    if (board->currentLocations[i] == player_number) {
+    if (board.currentLocations[i] == player_number) {
       possible_moves_led.push_back(i);
     }
   }
@@ -184,49 +186,55 @@ void showPlayerPositions(int player_number, TaskHandle_t* taskHandle, logic::Log
 }
 
 void showStartPositions(int num_players, TaskHandle_t* taskHandle) {
+  g_num_players = num_players;
   xTaskCreate(
     led_control::prvShowStartPositions,
     "Show Start Positions",
     2048,
-    &num_players,
+    NULL,
     1,
     taskHandle
   );
 }
 
 void prvShowStartPositions(void *pvParameters) {
-  int* num_players = static_cast<int*>(pvParameters);
+  Serial.println("Showing start positions for " + String(g_num_players) + " players");
   while(1) {
-    for (int on_off = 0; on_off < 2; on_off++) {
-      for (int i = 0; i < *num_players; i++) {
-        for (int j = 0; j < 3; j++) {
-          FastLED.leds()[logic::kStartLocations[i*3+j]] = on_off ? number_to_color(i+1) : CRGB::Black;
-        }
+    for (int i = 0; i < g_num_players; i++) {
+      for (int j = 0; j < 3; j++) {
+        FastLED.leds()[logic::kStartLocations[i*3+j]] = number_to_color(i+1);
       }
-      FastLED.show();
-      vTaskDelay(pdMS_TO_TICKS(500));
     }
+    FastLED.show();
+    vTaskDelay(pdMS_TO_TICKS(500));
+    for (int i = 0; i < g_num_players; i++) {
+      for (int j = 0; j < 3; j++) {
+        FastLED.leds()[logic::kStartLocations[i*3+j]] = CRGB::Black;
+      }
+    }
+    FastLED.show();
+    vTaskDelay(pdMS_TO_TICKS(500));
   }
 }
 
 void slidePiece(SlideStruct slide, TaskHandle_t* taskHandle) {
+  g_slide = slide;
   xTaskCreate(
-    led_control::prvShowStartPositions,
+    led_control::prvShowSlide,
     "Show Start Positions",
     2048,
-    &slide,
+    NULL,
     1,
     taskHandle
   );
 }
 
 void prvShowSlide(void *pvParameters) {
-  SlideStruct* slide = static_cast<SlideStruct*>(pvParameters);
   std::vector<int> indexes;
-  for (int i = slide->start_location; i <= slide->end_location; ++i) {
+  for (int i = g_slide.start_location; i <= g_slide.end_location; ++i) {
     indexes.push_back(i);
   }
-  CRGB color = number_to_color(slide->color);
+  CRGB color = number_to_color(g_slide.color);
   
   while(1) {
     FastLED.leds()[indexes[0]] = color;

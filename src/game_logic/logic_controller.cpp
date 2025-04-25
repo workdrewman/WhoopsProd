@@ -62,10 +62,6 @@ namespace logic
 
 
         Serial.println("Setup Complete");
-        Serial.println("Press any key to start game");
-        while (!Serial.available()) {}
-        Serial.read();
-        Serial.println("Game Started");
         Player.currentPlayer = 0;
         Player.setPlayerCount(&Scanner, &Terminal);
         Serial.println("Player count: " + String(Player.getPlayerCount()));
@@ -77,6 +73,8 @@ namespace logic
         led_control::showStartPositions(Player.getPlayerCount(), &startPosLights);
         while (!Board.allPiecesOnStart(&Player, &Terminal, &pieceDetection)) {vTaskDelay(pdMS_TO_TICKS(500));};
         vTaskDelete(startPosLights); // turn off leds
+        Serial.println("All pieces placed on start locations");
+        Serial.println("Game starting...");
 
         while (!Board.checkWinCondition(&Player)){
             led_control::showCorrectPositions(&Board);
@@ -94,9 +92,9 @@ namespace logic
         Serial.println("Player " + String(Player.currentPlayer + 1) + "'s turn");
         Serial.println();
 
-        //Flash LEDs for current player pieces
-        TaskHandle_t currentPlayerLeds = NULL;
-        led_control::showPlayerPositions(Player.currentPlayer, &currentPlayerLeds, &Board);
+        // //Flash LEDs for current player pieces
+        // TaskHandle_t currentPlayerLeds = NULL;
+        // led_control::showPlayerPositions(Player.currentPlayer, &currentPlayerLeds, Board);
 
         //Scan chip
         Serial.println("Draw and scan a chip");
@@ -109,7 +107,6 @@ namespace logic
         Terminal.t_displayChipInstructions(&Scanner);
         
         // Stop showing where all pieces should be
-        vTaskDelete(currentPlayerLeds); // turn off leds
         FastLED.clear();
         FastLED.show();
 

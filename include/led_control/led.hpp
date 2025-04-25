@@ -48,7 +48,7 @@ namespace led_control
   void showStartPositions(int num_players, TaskHandle_t* taskHandle);
   void prvShowStartPositions(void *pvParameters);
   void slidePiece(SlideStruct slide, TaskHandle_t* taskHandle);
-  void showPlayerPositions(int player_number, TaskHandle_t* taskHandle, logic::LogicBoard* board);
-
+  void showPlayerPositions(int player_number, TaskHandle_t* taskHandle, const logic::LogicBoard& board);
+  void prvShowSlide(void *pvParameters);
 } //namespace led_control
 #endif // LED_CONTROL_H

@@ -48,6 +48,13 @@ namespace logic {
                 while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
                 location = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
             }
+            
+            //If piece hits other piece, send other piece back to start
+            if (Board->currentLocations[location] != 0) {
+                Serial.print("COLLISION: Send opponent's piece back to start.");
+                Board->currentLocations[Board->findNextOpenStart(Board->currentLocations[location])] = Board->currentLocations[location];
+            }
+            
             Board->currentLocations[location] = color;
             Board->currentLocations[movingFrom] = 0;
             
