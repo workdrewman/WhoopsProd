@@ -39,5 +39,7 @@ namespace led_control
   void ledTask(void *pvParameters);
   void indicate_moves(const std::vector<int>& possibleMoves, int color, int start_tile, TaskHandle_t* taskHandle);
   void showWinner(int player_number);
+  void showStartPositions(int num_players, TaskHandle_t* taskHandle);
+  void prvShowStartPositions(void *pvParameters);
 } //namespace led_control
 #endif // LED_CONTROL_H

@@ -160,7 +160,33 @@ void indicate_moves(const vector<int>& possibleMoves, int color, int start_tile,
     FastLED.clear();
     FastLED.show();
     
-    xTaskCreate(led_control::ledTask, "LED Task", 4096, NULL, 1, taskHandle);
+    xTaskCreate(led_control::ledTask, "LED Task", 2048, NULL, 1, taskHandle);
+}
+
+void showStartPositions(int num_players, TaskHandle_t* taskHandle) {
+  xTaskCreate(
+    led_control::prvShowStartPositions,
+    "Show Start Positions",
+    2048,
+    &num_players,
+    1,
+    taskHandle
+  );
+}
+
+void prvShowStartPositions(void *pvParameters) {
+  int* num_players = static_cast<int*>(pvParameters);
+  while(1) {
+    for (int on_off = 0; on_off < 2; on_off++) {
+      for (int i = 0; i < *num_players; i++) {
+        for (int j = 0; j < 3; j++) {
+          FastLED.leds()[logic::kStartLocations[i*3+j]] = on_off ? number_to_color(i+1) : CRGB::Black;
+        }
+      }
+      FastLED.show();
+      vTaskDelay(pdMS_TO_TICKS(500));
+    }
+  }
 }
 
 void showWinner(int player_number)

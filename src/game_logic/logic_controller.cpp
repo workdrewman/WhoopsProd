@@ -73,7 +73,10 @@ namespace logic
 
         //code to ensure setup is done correctly
         Serial.println("Please place pieces on start locations");
-        while (!Board.allPiecesOnStart(&Player, &Terminal, &pieceDetection)) {};
+        TaskHandle_t startPosLights = NULL;
+        led_control::showStartPositions(Player.getPlayerCount(), &startPosLights);
+        while (!Board.allPiecesOnStart(&Player, &Terminal, &pieceDetection)) {vTaskDelay(500 / portTICK_PERIOD_MS);};
+        vTaskDelete(startPosLights); // turn off leds
 
         while (!Board.checkWinCondition(&Player)){
             led_control::showCorrectPositions(&Board);
