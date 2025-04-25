@@ -93,6 +93,11 @@ namespace logic
     void LogicController::takeTurn() {
         Serial.println("Player " + String(Player.currentPlayer + 1) + "'s turn");
         Serial.println();
+
+        //Flash LEDs for current player pieces
+        TaskHandle_t currentPlayerLeds = NULL;
+        led_control::showPlayerPositions(Player.currentPlayer, &currentPlayerLeds, &Board);
+
         //Scan chip
         Serial.println("Draw and scan a chip");
         
@@ -104,6 +109,7 @@ namespace logic
         Terminal.t_displayChipInstructions(&Scanner);
         
         // Stop showing where all pieces should be
+        vTaskDelete(currentPlayerLeds); // turn off leds
         FastLED.clear();
         FastLED.show();
 

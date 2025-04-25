@@ -163,6 +163,26 @@ void indicate_moves(const vector<int>& possibleMoves, int color, int start_tile,
     xTaskCreate(led_control::ledTask, "LED Task", 2048, NULL, 1, taskHandle);
 }
 
+void showPlayerPositions(int player_number, TaskHandle_t* taskHandle, logic::LogicBoard* board) {
+  possible_moves_led = {};
+  for (int i = 0; i < logic::kBoardSize; i++) {
+    if (board->currentLocations[i] == player_number) {
+      possible_moves_led.push_back(i);
+    }
+  }
+  led_color = led_control::number_to_color(player_number);
+  start_pos = 255;
+
+  xTaskCreate(
+    led_control::ledTask,
+    "Flash Current Player Positions",
+    2048,
+    NULL,
+    1,
+    taskHandle
+  );
+}
+
 void showStartPositions(int num_players, TaskHandle_t* taskHandle) {
   xTaskCreate(
     led_control::prvShowStartPositions,
