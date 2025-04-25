@@ -151,9 +151,7 @@ namespace logic
 
             //If piece hits other piece, send other piece back to start
             if (Board.currentLocations[newLocation] != 0) {
-                Serial.print("COLLISION: Send opponent's piece back to start. Press any key to confirm: ");
-                while (!Serial.available()) {}
-                Serial.read();
+                Serial.print("COLLISION: Send opponent's piece back to start.");
                 Board.currentLocations[Board.findNextOpenStart(Board.currentLocations[newLocation])] = Board.currentLocations[newLocation];
             }
             Board.currentLocations[newLocation] = Board.currentLocations[Calc.movingFrom];

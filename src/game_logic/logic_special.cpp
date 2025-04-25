@@ -32,9 +32,7 @@ namespace logic {
             Board->currentLocations[Calc->movingFrom] = 0;
             //Slide if on slide square
             int newLocation = Board->checkSlide(Player, opponentPawn);
-            Serial.println("Press any key to confirm opponent's pawn has been sent back to start and your pawn has been set in their previous location.");
-            while (!Serial.available()) {}
-            Serial.read();
+            Serial.println("Opponent's pawn has been sent back to start and your pawn has been set in their previous location.");
         }
     }
 
@@ -126,9 +124,7 @@ namespace logic {
         
         //If piece hits other piece, send other piece back to start
         if (Board->currentLocations[location] != 0) {
-            Serial.print("COLLISION: Send opponent's piece back to start. Press any key to confirm: ");
-            while (!Serial.available()) {}
-            Serial.read();
+            Serial.print("COLLISION: Send opponent's piece back to start.");
             Board->currentLocations[Board->findNextOpenStart(Board->currentLocations[location])] = Board->currentLocations[location];
         }
         Board->currentLocations[location] = color;
@@ -158,9 +154,7 @@ namespace logic {
                 Board->currentLocations[movingFrom] = 0;
             } 
             else if (endLocation == (movingFrom + 11)%44) {
-                Serial.print("COLLISION: Send opponent's piece back to start. Press any key to confirm: ");
-                while (!Serial.available()) {}
-                Serial.read();
+                Serial.print("COLLISION: Send opponent's piece back to start.");
                 Board->currentLocations[Board->findNextOpenStart(Board->currentLocations[endLocation])] = Board->currentLocations[endLocation];
                 Board->currentLocations[endLocation] = color;
                 //Slide if on slide square
@@ -175,9 +169,7 @@ namespace logic {
                 Board->currentLocations[endLocation] = color;
                 //Slide if on slide square
                 endLocation = Board->checkSlide(Player, endLocation);
-                Serial.print("Press any key to confirm opponent's pawn swapped with your pawn.");
-                while (!Serial.available()) {}
-                Serial.read();
+                Serial.print("Opponent's pawn swapped with your pawn.");
             }
         }
     }
