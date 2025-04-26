@@ -110,61 +110,72 @@ namespace logic
         FastLED.clear();
         FastLED.show();
 
-        //Pick up a piece
-        Terminal.t_selectPiece(&Board, &Player, &Calc, Scanner.lastChip, &pieceDetection);
+        bool isNewLocation = false;
+        while (isNewLocation == false) {
+            //Pick up a piece
+            Terminal.t_selectPiece(&Board, &Player, &Calc, Scanner.lastChip, &pieceDetection);
 
-        //Light leds of possible moves
-        vector<int> possibleMoves = Calc.findPossibleMoves(&Board, &Player, Calc.movingFrom, Scanner.lastChip);
-        //If there are no possible moves, go to next player
-        if (possibleMoves.size() == 0) {
-            Serial.println("No possible moves");
-            vTaskDelay(pdMS_TO_TICKS(1000)); // wait for a bit before going to next player
-            nextPlayer();
-            return;
-        }
+            //Light leds of possible moves
+            vector<int> possibleMoves = Calc.findPossibleMoves(&Board, &Player, Calc.movingFrom, Scanner.lastChip);
+            //Add the current location to the possible moves
+            possibleMoves.push_back(Calc.movingFrom);
+            //If there are no possible moves, go to next player
+            if (possibleMoves.size() == 0) {
+                Serial.println("No possible moves");
+                vTaskDelay(pdMS_TO_TICKS(1000)); // wait for a bit before going to next player
+                nextPlayer();
+                return;
+            }
 
-        Serial.print("Possible moves: ");
-        for (int i = 0; i < possibleMoves.size(); i++) {
-            Serial.printf("%d ", possibleMoves[i]);
-        }
-        Serial.println();
-        
-        // flash LEDs at potential move locations
-        TaskHandle_t led_task = NULL;
-        led_control::indicate_moves(possibleMoves, Player.getPlayerColor(Player.currentPlayer), Calc.movingFrom, &led_task);
-        
-        //handle whoops, 7s, and 11s
-        Special.handleWhoops(&Scanner, &Board, &Player, &Calc, possibleMoves, &pieceDetection);
-        Special.handleSeven(&Scanner, &Board, &Player, &Calc, possibleMoves, Calc.movingFrom, led_task, &pieceDetection);
-        Special.handleEleven(&Scanner, &Board, &Player, possibleMoves, Calc.movingFrom, &pieceDetection);
+            Serial.print("Possible moves: ");
+            for (int i = 0; i < possibleMoves.size(); i++) {
+                Serial.printf("%d ", possibleMoves[i]);
+            }
+            Serial.println();
+            
+            // flash LEDs at potential move locations
+            TaskHandle_t led_task = NULL;
+            led_control::indicate_moves(possibleMoves, Player.getPlayerColor(Player.currentPlayer), Calc.movingFrom, &led_task);
 
-        //Place piece on new location
-        int newLocation;
-        if (!(Scanner.lastChip == 0 || Scanner.lastChip == 7 || Scanner.lastChip == 11)) {
-            Serial.print("Select a location to move to: ");
-            while (!pieceDetection.hasChangedSensor()) {} // wait until player chooses a piece
-            newLocation = piece_detection::kSensorMap.at(pieceDetection.getChangedSensors().at(0));
+            
+            //handle whoops, 7s, and 11s
+            Special.handleWhoops(&Scanner, &Board, &Player, &Calc, possibleMoves, &pieceDetection, &isNewLocation);
+            Special.handleSeven(&Scanner, &Board, &Player, &Calc, possibleMoves, Calc.movingFrom, led_task, &pieceDetection, &isNewLocation);
+            Special.handleEleven(&Scanner, &Board, &Player, possibleMoves, Calc.movingFrom, &pieceDetection, &isNewLocation);
 
-            while (find(possibleMoves.begin(), possibleMoves.end(), newLocation) == possibleMoves.end()) {
-                Serial.print("Invalid location, please select a valid location: ");
+            //Place piece on new location
+            int newLocation;
+            if (!(Scanner.lastChip == 0 || Scanner.lastChip == 7 || Scanner.lastChip == 11)) {
+                Serial.print("Select a location to move to: ");
                 while (!pieceDetection.hasChangedSensor()) {} // wait until player chooses a piece
                 newLocation = piece_detection::kSensorMap.at(pieceDetection.getChangedSensors().at(0));
-            }
-            vTaskDelete(led_task); // turn off leds
-            Serial.printf("\nMoving player %d's piece %d ----> %d\n", Player.currentPlayer + 1, Calc.movingFrom, newLocation);
 
-            //If piece hits other piece, send other piece back to start
-            if (Board.currentLocations[newLocation] != 0) {
-                Serial.print("COLLISION: Send opponent's piece back to start.");
-                Board.currentLocations[Board.findNextOpenStart(Board.currentLocations[newLocation])] = Board.currentLocations[newLocation];
-            }
-            Board.currentLocations[newLocation] = Board.currentLocations[Calc.movingFrom];
-            Board.currentLocations[Calc.movingFrom] = 0;
+                while (find(possibleMoves.begin(), possibleMoves.end(), newLocation) == possibleMoves.end()) {
+                    Serial.print("Invalid location, please select a valid location: ");
+                    while (!pieceDetection.hasChangedSensor()) {} // wait until player chooses a piece
+                    newLocation = piece_detection::kSensorMap.at(pieceDetection.getChangedSensors().at(0));
+                }
+                vTaskDelete(led_task); // turn off leds
+                
+                // Check if the new location is the same as the old location
+                if (newLocation != Calc.movingFrom) {
+                    isNewLocation = true;    
+                    Serial.printf("\nMoving player %d's piece %d ----> %d\n", Player.currentPlayer + 1, Calc.movingFrom, newLocation);
 
-            //Slide if on slide square
-            newLocation = Board.checkSlide(&Player, newLocation, &pieceDetection);
-        } else if (Scanner.lastChip == 0 || Scanner.lastChip == 11) {
-            vTaskDelete(led_task); // turn off leds
+                    //If piece hits other piece, send other piece back to start
+                    if (Board.currentLocations[newLocation] != 0) {
+                        Serial.print("COLLISION: Send opponent's piece back to start.");
+                        Board.currentLocations[Board.findNextOpenStart(Board.currentLocations[newLocation])] = Board.currentLocations[newLocation];
+                    }
+                    Board.currentLocations[newLocation] = Board.currentLocations[Calc.movingFrom];
+                    Board.currentLocations[Calc.movingFrom] = 0;
+
+                    //Slide if on slide square
+                    newLocation = Board.checkSlide(&Player, newLocation, &pieceDetection);
+                }
+            } else if (Scanner.lastChip == 0 || Scanner.lastChip == 11) {
+                vTaskDelete(led_task); // turn off leds
+            }
         }
         
         if (Board.checkWinCondition(&Player)) {
