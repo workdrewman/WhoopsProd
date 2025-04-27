@@ -9,6 +9,7 @@
 #include "led_control/led.hpp"
 #include <algorithm>
 #include <FastLED.h>
+#include "audio/audio.hpp" // for audio control
 
 
 namespace logic {
@@ -52,6 +53,8 @@ namespace logic {
             //If piece hits other piece, send other piece back to start
             if (Board->currentLocations[location] != 0) {
                 Serial.print("COLLISION: Send opponent's piece back to start.");
+                audio::playTrack(35); // Play Collision
+                delay(8000);
                 Board->currentLocations[Board->findNextOpenStart(Board->currentLocations[location])] = Board->currentLocations[location];
             }
             
@@ -132,6 +135,8 @@ namespace logic {
         //If piece hits other piece, send other piece back to start
         if (Board->currentLocations[location] != 0) {
             Serial.print("COLLISION: Send opponent's piece back to start.");
+            audio::playTrack(35); // Play Collision
+            delay(8000);
             Board->currentLocations[Board->findNextOpenStart(Board->currentLocations[location])] = Board->currentLocations[location];
         }
         Board->currentLocations[location] = color;
@@ -162,6 +167,8 @@ namespace logic {
             } 
             else if (endLocation == (movingFrom + 11)%44) {
                 Serial.print("COLLISION: Send opponent's piece back to start.");
+                audio::playTrack(35); // Play Collision
+                delay(8000);
                 Board->currentLocations[Board->findNextOpenStart(Board->currentLocations[endLocation])] = Board->currentLocations[endLocation];
                 Board->currentLocations[endLocation] = color;
                 //Slide if on slide square

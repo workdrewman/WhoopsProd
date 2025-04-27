@@ -9,6 +9,7 @@
 #include "led_control/led.hpp"
 #include <FastLED.h>
 #include <algorithm>
+#include "audio/audio.hpp"
 
 using namespace std;
 
@@ -57,36 +58,58 @@ namespace logic {
         switch (Scanner->lastChip) {
             case 0:
                 Serial.println("Whoops! Take any one pawn from Start and move it directly to a square occupied by any opponent's pawn, sending that pawn back to its own Start. A Whoops! chip cannot be used on an opponent's pawn in a Safety Zone or at the Home base. If there are no pawns on the player's Start, or no opponent's pawns on any space that can be moved to, the turn ends.");
+                audio::playTrack(21); // Play Whoops
+                delay(12000);
                 break;
             case 1:
                 Serial.println("Either move a pawn from Start or move a pawn 1 space forward.");
+                audio::playTrack(1); // Play Move 1
+                delay(8000);
                 break;
             case 2:
                 Serial.println("Either move a pawn from Start or move a pawn 2 spaces forward."); //Maybe add draw again
+                audio::playTrack(3); // Play Move 2 
+                delay(7000);
                 break;
             case 3:
                 Serial.println("Move a pawn 3 spaces forward.");
+                audio::playTrack(5); // Play Move 3 
+                delay(5000);
                 break;
             case 4:
                 Serial.println("Move a pawn 4 spaces backward.");
+                audio::playTrack(7); // Play Move 4
+                delay(5000);
                 break;
             case 5:
                 Serial.println("Move a pawn 5 spaces forward.");
+                audio::playTrack(9); // Play Move 5
+                delay(5000);
                 break;
             case 7:
                 Serial.println("Move one pawn 7 spaces forward, or split the 7 spaces between two pawns (such as 4 spaces for one pawn and 3 for another).");
+                audio::playTrack(11); // Play Move 7
+                delay(8000);
                 break;
             case 8:
                 Serial.println("Move a pawn 8 spaces forward.");
+                audio::playTrack(13); // Play Move 8
+                delay(4000);
                 break;
             case 10:
                 Serial.println("Move a pawn 10 spaces forward or 1 space backward. If none of a player's pawns can move forward 10 spaces, then one pawn must move back 1 space.");
+                audio::playTrack(15); // Play Move 10
+                delay(11000);
                 break;
             case 11:
                 Serial.println("Move 11 spaces forward, or switch the places of one of the player's own pawns and an opponent's pawn. A player who cannot move 11 spaces is not forced to switch and instead can end their turn. An 11 cannot be used to switch a pawn that is in a Safety Zone.");
+                audio::playTrack(17); // Play Move 11
+                delay(8000);
                 break;
             case 12:
                 Serial.println("Move a pawn 12 spaces forward.");
+                audio::playTrack(19); // Play Move 12
+                delay(5000);
                 break;
         }
         Serial.println();

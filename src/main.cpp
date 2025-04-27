@@ -47,7 +47,4 @@ void loop() {
   FastLED.show();
   logic::LogicController* logicController = new logic::LogicController;
   logicController->startGame(); 
-
-
-
 }

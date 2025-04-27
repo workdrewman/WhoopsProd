@@ -6,6 +6,7 @@
 #include <FastLED.h> // for LEDs
 #include "led_control/led.hpp" // for helper functions
 #include "piece_detection/piece_detection.hpp" // for PieceDetection
+#include "audio/audio.hpp" // for audio control
 
 using namespace std;
 
@@ -18,6 +19,8 @@ namespace logic
     // int player2Color = 0;
     // int player3Color = 0;
     // int player4Color = 0;
+
+    bool firstTurn = true;
 
     // //Locations
     // //Map
@@ -63,6 +66,8 @@ namespace logic
 
         Serial.println("Setup Complete");
         Player.currentPlayer = 0;
+        audio::playTrack(23); // Play Start Game
+        delay(9000);
         Player.setPlayerCount(&Scanner, &Terminal);
         Serial.println("Player count: " + String(Player.getPlayerCount()));
         Serial.println();
@@ -79,7 +84,7 @@ namespace logic
         while (!Board.checkWinCondition(&Player)){
             led_control::showCorrectPositions(&Board);
             if (pieceDetection.hasChangedSensor()) {
-                // dump the changes... they can figure it out
+                // dump the changes... we show where pieces should be
                 pieceDetection.getChangedSensors();
             }
             takeTurn();
@@ -89,6 +94,16 @@ namespace logic
     }
 
     void LogicController::takeTurn() {
+
+        if (firstTurn) {
+            firstTurn = false;
+            audio::playTrack(25); // Play Yellow start
+            delay(5000);
+        } else {
+            audio::playTrack(27 + Player.currentPlayer * 2); // Play scan sound for the current player
+            delay(5000);
+        }
+
         Serial.println("Player " + String(Player.currentPlayer + 1) + "'s turn");
         Serial.println();
 
@@ -158,6 +173,8 @@ namespace logic
             //If piece hits other piece, send other piece back to start
             if (Board.currentLocations[newLocation] != 0) {
                 Serial.print("COLLISION: Send opponent's piece back to start.");
+                audio::playTrack(35); // Play Collision
+                delay(8000);
                 Board.currentLocations[Board.findNextOpenStart(Board.currentLocations[newLocation])] = Board.currentLocations[newLocation];
             }
             Board.currentLocations[newLocation] = Board.currentLocations[Calc.movingFrom];

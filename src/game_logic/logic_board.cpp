@@ -6,6 +6,7 @@
 #include "piece_detection/piece_detection.hpp"
 #include "led_control/led.hpp"
 #include <algorithm>
+#include "audio/audio.hpp" // for audio control
 
 namespace logic {
 
@@ -163,6 +164,8 @@ namespace logic {
             led_control::SlideStruct slide = {location, kSlideEndLocations[slideIndex], color};
             TaskHandle_t slideLights = NULL;
             led_control::slidePiece(slide, &slideLights);
+            audio::playTrack(37);  // Play slide
+            delay(10000);
             for (int i = kSlideStartLocations[slideIndex] + 1; i <= kSlideEndLocations[slideIndex]; i++) {
                 if (currentLocations[i] != 0) {
                     currentLocations[findNextOpenStart(currentLocations[i])] = currentLocations[i];
