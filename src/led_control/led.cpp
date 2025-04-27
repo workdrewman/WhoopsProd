@@ -117,6 +117,8 @@ CRGB number_to_color(int color)
       return CRGB::Green;
     case 4:
       return CRGB::Blue;
+    default:
+      return CRGB::Black;
   }
 }
 
@@ -170,6 +172,7 @@ void showPlayerPositions(int player_number, TaskHandle_t* taskHandle, const logi
   for (int i = 0; i < logic::kBoardSize; i++) {
     if (board.currentLocations[i] == player_number) {
       possible_moves_led.push_back(i);
+      Serial.println("Player " + String(player_number) + " is at tile " + String(i));
     }
   }
   led_color = led_control::number_to_color(player_number);

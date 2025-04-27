@@ -93,8 +93,8 @@ namespace logic
         Serial.println();
 
         // //Flash LEDs for current player pieces
-        // TaskHandle_t currentPlayerLeds = NULL;
-        // led_control::showPlayerPositions(Player.currentPlayer, &currentPlayerLeds, Board);
+        TaskHandle_t currentPlayerLeds = NULL;
+        led_control::showPlayerPositions(Player.currentPlayer+1, &currentPlayerLeds, Board);
 
         //Scan chip
         Serial.println("Draw and scan a chip");
@@ -103,7 +103,9 @@ namespace logic
         while (scan_val == rfid::kInvalidCardName)
         {
             scan_val = Scanner.scanCard();
-        }        Scanner.lastChip = scan_val;
+        }        
+        Scanner.lastChip = scan_val;
+        vTaskDelete(currentPlayerLeds);
         Terminal.t_displayChipInstructions(&Scanner);
         
         // Stop showing where all pieces should be
@@ -118,7 +120,7 @@ namespace logic
         //If there are no possible moves, go to next player
         if (possibleMoves.size() == 0) {
             Serial.println("No possible moves");
-            vTaskDelay(pdMS_TO_TICKS(1000)); // wait for a bit before going to next player
+            vTaskDelay(pdMS_TO_TICKS(4000)); // wait for a bit before going to next player
             nextPlayer();
             return;
         }

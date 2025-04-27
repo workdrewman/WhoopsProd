@@ -124,7 +124,7 @@ namespace logic {
         }
         TaskHandle_t led_task = NULL;
         led_control::indicate_moves({location}, color, start, &led_task);
-        while (!Serial.available()) {}
+        while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
         vTaskDelete(led_task); // turn off leds
         FastLED.clear();
         FastLED.show();
