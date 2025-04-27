@@ -49,7 +49,5 @@ void loop() {
   logicController->startGame(); 
 
 
-  // delay(10000);
-  // audio::playTrack(1); // Play track 1
 
 }
