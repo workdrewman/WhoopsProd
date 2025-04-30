@@ -66,8 +66,9 @@ namespace logic
 
         Serial.println("Setup Complete");
         Player.currentPlayer = 0;
-        audio::playTrack(23); // Play Start Game
-        delay(9000);
+        //audio::setVolume(28); // Set initial volume to 0
+        //audio::playTrack(23); // Play Start Game
+        // delay(9000);
         Player.setPlayerCount(&Scanner, &Terminal);
         Serial.println("Player count: " + String(Player.getPlayerCount()));
         Serial.println();
@@ -97,11 +98,19 @@ namespace logic
 
         if (firstTurn) {
             firstTurn = false;
-            audio::playTrack(25); // Play Yellow start
-            delay(5000);
+            //audio::playTrack(25); // Play Yellow start
+            // delay(5000);
         } else {
-            audio::playTrack(27 + Player.currentPlayer * 2); // Play scan sound for the current player
-            delay(5000);
+            if (Player.currentPlayer == 1) {
+                //audio::playTrack(27); // Play Pink scan
+            } else if (Player.currentPlayer == 2) {
+                //audio::playTrack(29); // Play Blue scan
+            } else if (Player.currentPlayer == 3) {
+                //audio::playTrack(31); // Play Green scan
+            } else if (Player.currentPlayer == 0) {
+                //audio::playTrack(33); // Play Yellow scan
+            }
+            // delay(5000);
         }
 
         Serial.println("Player " + String(Player.currentPlayer + 1) + "'s turn");
@@ -173,8 +182,8 @@ namespace logic
             //If piece hits other piece, send other piece back to start
             if (Board.currentLocations[newLocation] != 0) {
                 Serial.print("COLLISION: Send opponent's piece back to start.");
-                audio::playTrack(35); // Play Collision
-                delay(8000);
+                //audio::playTrack(35); // Play Collision
+                // delay(8000);
                 Board.currentLocations[Board.findNextOpenStart(Board.currentLocations[newLocation])] = Board.currentLocations[newLocation];
             }
             Board.currentLocations[newLocation] = Board.currentLocations[Calc.movingFrom];
