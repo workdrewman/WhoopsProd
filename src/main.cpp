@@ -29,16 +29,16 @@ void setup() {
   FastLED.show();
   set_max_power_in_volts_and_milliamps(5, 100);
   Serial.begin(9600);
-  mySerial.begin(9600, SERIAL_8N1, 12, 14);
+  // mySerial.begin(9600, SERIAL_8N1, 12, 14);
   
-  xTaskCreate(
-    AudioPotTask,         // Task function
-    "Potentiometer read",      // Name of the task
-    2048,             // Stack size (in bytes)
-    NULL,             // Task parameter
-    2,                // Priority
-    NULL              // Task handle
-  );
+  // xTaskCreate(
+  //   AudioPotTask,         // Task function
+  //   "Potentiometer read",      // Name of the task
+  //   2048,             // Stack size (in bytes)
+  //   NULL,             // Task parameter
+  //   2,                // Priority
+  //   NULL              // Task handle
+  // );
 
 }
 

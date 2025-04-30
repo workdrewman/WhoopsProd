@@ -131,7 +131,10 @@ namespace logic {
         }
 
         // Turn off led after the correct piece is chosen
-        vTaskDelete(led_task);
+        if (led_task != NULL) {
+            vTaskDelete(led_task); // turn off leds
+            led_task = NULL;
+        }
         Calc->movingFrom = location;
         //setPlayerColor();
     }

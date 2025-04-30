@@ -72,7 +72,10 @@ namespace logic
         TaskHandle_t startPosLights = NULL;
         led_control::showStartPositions(Player.getPlayerCount(), &startPosLights);
         while (!Board.allPiecesOnStart(&Player, &Terminal, &pieceDetection)) {vTaskDelay(pdMS_TO_TICKS(500));};
-        vTaskDelete(startPosLights); // turn off leds
+        if (startPosLights != NULL) {
+            vTaskDelete(startPosLights); // turn off leds
+            startPosLights = NULL;
+        }
         Serial.println("All pieces placed on start locations");
         Serial.println("Game starting...");
 
@@ -105,7 +108,10 @@ namespace logic
             scan_val = Scanner.scanCard();
         }        
         Scanner.lastChip = scan_val;
-        vTaskDelete(currentPlayerLeds);
+        if (currentPlayerLeds != NULL) {
+            vTaskDelete(currentPlayerLeds); // turn off leds
+            currentPlayerLeds = NULL;
+        }
         Terminal.t_displayChipInstructions(&Scanner);
         
         // Stop showing where all pieces should be
@@ -152,7 +158,10 @@ namespace logic
                 while (!pieceDetection.hasChangedSensor()) {} // wait until player chooses a piece
                 newLocation = piece_detection::kSensorMap.at(pieceDetection.getChangedSensors().at(0));
             }
-            vTaskDelete(led_task); // turn off leds
+            if (led_task != NULL) {
+                vTaskDelete(led_task); // turn off leds
+                led_task = NULL;
+            }
             Serial.printf("\nMoving player %d's piece %d ----> %d\n", Player.currentPlayer + 1, Calc.movingFrom, newLocation);
 
             //If piece hits other piece, send other piece back to start
@@ -166,7 +175,10 @@ namespace logic
             //Slide if on slide square
             newLocation = Board.checkSlide(&Player, newLocation, &pieceDetection);
         } else if (Scanner.lastChip == 0 || Scanner.lastChip == 11) {
-            vTaskDelete(led_task); // turn off leds
+            if (led_task != NULL) {
+                vTaskDelete(led_task); // turn off leds
+                led_task = NULL;
+            }
         }
         
         if (Board.checkWinCondition(&Player)) {

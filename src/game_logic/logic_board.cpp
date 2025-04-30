@@ -172,7 +172,10 @@ namespace logic {
             currentLocations[kSlideEndLocations[slideIndex]] = currentLocations[location];
             currentLocations[location] = 0;
             while (!pieceDetection->hasChangedSensor()) {}
-            vTaskDelete(slideLights); // turn off leds
+            if (slideLights != NULL) {
+                vTaskDelete(slideLights); // turn off leds
+                slideLights = NULL;
+            }
             return slideIndex;
         }
         return location;

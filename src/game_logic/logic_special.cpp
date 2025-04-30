@@ -58,8 +58,10 @@ namespace logic {
             Board->currentLocations[location] = color;
             Board->currentLocations[movingFrom] = 0;
             
-            // turn off leds
-            vTaskDelete(led_task); 
+            if (led_task != NULL) {
+                vTaskDelete(led_task); // turn off leds
+                led_task = NULL;
+            }
             FastLED.clear();
             FastLED.show();
 
@@ -125,7 +127,10 @@ namespace logic {
         TaskHandle_t led_task = NULL;
         led_control::indicate_moves({location}, color, start, &led_task);
         while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
-        vTaskDelete(led_task); // turn off leds
+        if (led_task != NULL) {
+            vTaskDelete(led_task); // turn off leds
+            led_task = NULL;
+        }
         FastLED.clear();
         FastLED.show();
         
