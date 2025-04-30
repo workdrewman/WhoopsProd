@@ -46,7 +46,7 @@ namespace logic
             void startGame();
             void takeTurn();
             void nextPlayer();
-            void indicate_moves(const vector<int>& possibleMoves, int color, int start_tile, TaskHandle_t* taskHandle);
+            void indicate_moves(const vector<int>& possibleMoves, int color, int start_tile);
     };
     
     void ledTask(void* pvParameters);

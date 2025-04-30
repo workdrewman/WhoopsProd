@@ -161,8 +161,7 @@ namespace logic {
             int slideIndex= find(kSlideStartLocations.begin(), kSlideStartLocations.end(), location) - kSlideStartLocations.begin();
             Serial.println("Move the piece to the end of the slide (location " + String(kSlideEndLocations[slideIndex]) + ") and send any pawns you collide with back to their Start.");
             led_control::SlideStruct slide = {location, kSlideEndLocations[slideIndex], color};
-            TaskHandle_t slideLights = NULL;
-            led_control::slidePiece(slide, &slideLights);
+            led_control::slidePiece(slide);
             for (int i = kSlideStartLocations[slideIndex] + 1; i <= kSlideEndLocations[slideIndex]; i++) {
                 if (currentLocations[i] != 0) {
                     currentLocations[findNextOpenStart(currentLocations[i])] = currentLocations[i];
@@ -172,10 +171,7 @@ namespace logic {
             currentLocations[kSlideEndLocations[slideIndex]] = currentLocations[location];
             currentLocations[location] = 0;
             while (!pieceDetection->hasChangedSensor()) {}
-            if (slideLights != NULL) {
-                vTaskDelete(slideLights); // turn off leds
-                slideLights = NULL;
-            }
+            led_control::stopSlide();
             return slideIndex;
         }
         return location;

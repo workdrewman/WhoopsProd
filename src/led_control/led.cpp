@@ -11,14 +11,18 @@
 
 #include "game_logic/logic_board.hpp" // for LogicBoard
 
-int start_pos;
-std::vector<int> possible_moves_led;
-CRGB led_color;
-int g_num_players = 0;
-led_control::SlideStruct g_slide;
 
 namespace led_control
 {
+int g_start_pos;
+std::vector<int> g_possible_moves_led;
+CRGB g_led_color;
+int g_num_players = 0;
+led_control::SlideStruct g_slide;
+
+TaskHandle_t led_task_handle = NULL;
+TaskHandle_t start_pos_handle = NULL;
+TaskHandle_t slide_task_handle = NULL;
 
 const int kBoardSideLength{11};
 
@@ -126,78 +130,123 @@ void showCorrectPositions(logic::LogicBoard* board) {
   FastLED.clear();
   FastLED.show();
   for (int i = 0; i < logic::kBoardSize; i++) {
-      if (board->currentLocations[i] == 0) {
-          continue;
-      } else {
-          FastLED.leds()[i] = led_control::number_to_color(board->currentLocations[i]);
-      }
+    if (board->currentLocations[i] == 0) {
+      continue;
+    } else {
+      FastLED.leds()[i] = led_control::number_to_color(board->currentLocations[i]);
+    }
   }
   FastLED.show();
 }
 
 void ledTask(void *pvParameters) {        
   while (1) {
-      // Serial.println("LED sequence running...");
-      if (start_pos < 80) {
-        FastLED.leds()[start_pos] = led_color;
-      }
-      for (int move : possible_moves_led) {
-          FastLED.leds()[move] = led_color;
-      }
-      FastLED.show();
-      vTaskDelay(pdMS_TO_TICKS(500));
+    if (g_start_pos < 80) {
+      FastLED.leds()[g_start_pos] = g_led_color;
+    }
+    for (int move : g_possible_moves_led) {
+      FastLED.leds()[move] = g_led_color;
+    }
+    FastLED.show();
+    vTaskDelay(pdMS_TO_TICKS(500));
 
-      for (int move : possible_moves_led) {
-          FastLED.leds()[move] = CRGB::Black;
-      }
-      FastLED.show();
-      vTaskDelay(pdMS_TO_TICKS(500));
+    for (int move : g_possible_moves_led) {
+      FastLED.leds()[move] = CRGB::Black;
+    }
+    FastLED.show();
+    vTaskDelay(pdMS_TO_TICKS(500));
   }
 }
 
-void indicate_moves(const vector<int>& possibleMoves, int color, int start_tile, TaskHandle_t* taskHandle)
-{
-    possible_moves_led = possibleMoves;
-    led_color = led_control::number_to_color(color);
-    start_pos = start_tile;
-
-    FastLED.clear();
-    FastLED.show();
-    
-    xTaskCreate(led_control::ledTask, "LED Task", 2048, NULL, 1, taskHandle);
+void stopLedTask() {
+  if (eTaskGetState(led_task_handle) != eDeleted) {
+    vTaskSuspend(led_task_handle);
+  }
 }
 
-void showPlayerPositions(int player_number, TaskHandle_t* taskHandle, const logic::LogicBoard& board) {
-  possible_moves_led = {};
+void indicate_moves(const vector<int>& possibleMoves, int color, int start_tile)
+{
+  g_possible_moves_led = possibleMoves;
+  g_led_color = led_control::number_to_color(color);
+  g_start_pos = start_tile;
+
+  FastLED.clear();
+  FastLED.show();
+  
+  if (led_task_handle == NULL) {
+    xTaskCreate(
+      led_control::ledTask,
+      "LED Task",
+      2048,
+      NULL,
+      1,
+      &led_task_handle
+    );
+  }
+  else {
+    vTaskResume(led_task_handle);
+  }
+}
+
+void stopIndicateMoves() {
+  if (eTaskGetState(led_task_handle) != eDeleted) {
+    vTaskSuspend(led_task_handle);
+  }
+}
+
+void showPlayerPositions(int player_number, const logic::LogicBoard& board) {
+  g_possible_moves_led.clear();
   for (int i = 0; i < logic::kBoardSize; i++) {
     if (board.currentLocations[i] == player_number) {
-      possible_moves_led.push_back(i);
+      g_possible_moves_led.push_back(i);
       Serial.println("Player " + String(player_number) + " is at tile " + String(i));
     }
   }
-  led_color = led_control::number_to_color(player_number);
-  start_pos = 255;
+  g_led_color = led_control::number_to_color(player_number);
+  g_start_pos = 255;
 
-  xTaskCreate(
-    led_control::ledTask,
-    "Flash Current Player Positions",
-    2048,
-    NULL,
-    1,
-    taskHandle
-  );
+  if (led_task_handle == NULL) {
+    xTaskCreate(
+      led_control::ledTask,
+      "Flash Current Player Positions",
+      2048,
+      NULL,
+      1,
+      &led_task_handle
+    );
+  }
+  else {
+    vTaskResume(led_task_handle);
+  }
 }
 
-void showStartPositions(int num_players, TaskHandle_t* taskHandle) {
+void stopPlayerPositions() {
+  if (eTaskGetState(led_task_handle) != eDeleted) {
+    vTaskSuspend(led_task_handle);
+  }
+}
+
+void showStartPositions(int num_players) {
   g_num_players = num_players;
-  xTaskCreate(
-    led_control::prvShowStartPositions,
-    "Show Start Positions",
-    2048,
-    NULL,
-    1,
-    taskHandle
-  );
+
+  if (start_pos_handle == NULL) {
+    xTaskCreate(
+      led_control::prvShowStartPositions,
+      "Show Start Positions",
+      2048,
+      NULL,
+      1,
+      &start_pos_handle
+    );
+  } else {
+    vTaskResume(start_pos_handle);
+  }
+}
+
+void stopStartPositions() {
+  if (eTaskGetState(start_pos_handle) != eDeleted) {
+    vTaskSuspend(start_pos_handle);
+  }
 }
 
 void prvShowStartPositions(void *pvParameters) {
@@ -220,16 +269,29 @@ void prvShowStartPositions(void *pvParameters) {
   }
 }
 
-void slidePiece(SlideStruct slide, TaskHandle_t* taskHandle) {
+void slidePiece(SlideStruct slide) {
   g_slide = slide;
-  xTaskCreate(
-    led_control::prvShowSlide,
-    "Show Start Positions",
-    2048,
-    NULL,
-    1,
-    taskHandle
-  );
+
+  if (slide_task_handle == NULL) {
+    xTaskCreate(
+      led_control::prvShowSlide,
+      "Show Start Positions",
+      2048,
+      NULL,
+      1,
+      &slide_task_handle
+    );
+  }
+  else {
+    vTaskResume(slide_task_handle);
+  }
+}
+
+void stopSlide() {
+  if (eTaskGetState(slide_task_handle) != eDeleted) {
+    vTaskSuspend(slide_task_handle);
+    slide_task_handle = NULL;
+  }
 }
 
 void prvShowSlide(void *pvParameters) {

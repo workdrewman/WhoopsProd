@@ -69,13 +69,9 @@ namespace logic
 
         //code to ensure setup is done correctly
         Serial.println("Please place pieces on start locations");
-        TaskHandle_t startPosLights = NULL;
-        led_control::showStartPositions(Player.getPlayerCount(), &startPosLights);
+        led_control::showStartPositions(Player.getPlayerCount());
         while (!Board.allPiecesOnStart(&Player, &Terminal, &pieceDetection)) {vTaskDelay(pdMS_TO_TICKS(500));};
-        if (startPosLights != NULL) {
-            vTaskDelete(startPosLights); // turn off leds
-            startPosLights = NULL;
-        }
+        led_control::stopStartPositions();
         Serial.println("All pieces placed on start locations");
         Serial.println("Game starting...");
 
@@ -96,8 +92,7 @@ namespace logic
         Serial.println();
 
         // //Flash LEDs for current player pieces
-        TaskHandle_t currentPlayerLeds = NULL;
-        led_control::showPlayerPositions(Player.currentPlayer+1, &currentPlayerLeds, Board);
+        led_control::showPlayerPositions(Player.currentPlayer+1, Board);
 
         //Scan chip
         Serial.println("Draw and scan a chip");
@@ -108,10 +103,7 @@ namespace logic
             scan_val = Scanner.scanCard();
         }        
         Scanner.lastChip = scan_val;
-        if (currentPlayerLeds != NULL) {
-            vTaskDelete(currentPlayerLeds); // turn off leds
-            currentPlayerLeds = NULL;
-        }
+        led_control::stopPlayerPositions();
         Terminal.t_displayChipInstructions(&Scanner);
         
         // Stop showing where all pieces should be
@@ -138,12 +130,11 @@ namespace logic
         Serial.println();
         
         // flash LEDs at potential move locations
-        TaskHandle_t led_task = NULL;
-        led_control::indicate_moves(possibleMoves, Player.getPlayerColor(Player.currentPlayer), Calc.movingFrom, &led_task);
+        led_control::indicate_moves(possibleMoves, Player.getPlayerColor(Player.currentPlayer), Calc.movingFrom);
         
         //handle whoops, 7s, and 11s
         Special.handleWhoops(&Scanner, &Board, &Player, &Calc, possibleMoves, &pieceDetection);
-        Special.handleSeven(&Scanner, &Board, &Player, &Calc, possibleMoves, Calc.movingFrom, led_task, &pieceDetection);
+        Special.handleSeven(&Scanner, &Board, &Player, &Calc, possibleMoves, Calc.movingFrom, &pieceDetection);
         Special.handleEleven(&Scanner, &Board, &Player, possibleMoves, Calc.movingFrom, &pieceDetection);
 
         //Place piece on new location
@@ -158,10 +149,7 @@ namespace logic
                 while (!pieceDetection.hasChangedSensor()) {} // wait until player chooses a piece
                 newLocation = piece_detection::kSensorMap.at(pieceDetection.getChangedSensors().at(0));
             }
-            if (led_task != NULL) {
-                vTaskDelete(led_task); // turn off leds
-                led_task = NULL;
-            }
+            led_control::stopIndicateMoves();
             Serial.printf("\nMoving player %d's piece %d ----> %d\n", Player.currentPlayer + 1, Calc.movingFrom, newLocation);
 
             //If piece hits other piece, send other piece back to start
@@ -175,10 +163,7 @@ namespace logic
             //Slide if on slide square
             newLocation = Board.checkSlide(&Player, newLocation, &pieceDetection);
         } else if (Scanner.lastChip == 0 || Scanner.lastChip == 11) {
-            if (led_task != NULL) {
-                vTaskDelete(led_task); // turn off leds
-                led_task = NULL;
-            }
+            led_control::stopIndicateMoves();
         }
         
         if (Board.checkWinCondition(&Player)) {

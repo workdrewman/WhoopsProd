@@ -36,7 +36,7 @@ namespace logic {
         }
     }
 
-    void LogicSpecial::handleSeven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom, TaskHandle_t led_task, piece_detection::PieceDetection* pieceDetection) {
+    void LogicSpecial::handleSeven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom, piece_detection::PieceDetection* pieceDetection) {
         if (Scanner->lastChip == 7) {
             int color = Player->getPlayerColor(Player->currentPlayer);
             Serial.print("Place your pawn in a valid location: ");
@@ -58,10 +58,7 @@ namespace logic {
             Board->currentLocations[location] = color;
             Board->currentLocations[movingFrom] = 0;
             
-            if (led_task != NULL) {
-                vTaskDelete(led_task); // turn off leds
-                led_task = NULL;
-            }
+            led_control::stopIndicateMoves();
             FastLED.clear();
             FastLED.show();
 
@@ -124,13 +121,10 @@ namespace logic {
                 location++;
             }
         }
-        TaskHandle_t led_task = NULL;
-        led_control::indicate_moves({location}, color, start, &led_task);
+        led_control::indicate_moves({location}, color, start);
         while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
-        if (led_task != NULL) {
-            vTaskDelete(led_task); // turn off leds
-            led_task = NULL;
-        }
+        vTaskDelay(pdMS_TO_TICKS(500));
+        led_control::stopIndicateMoves();
         FastLED.clear();
         FastLED.show();
         

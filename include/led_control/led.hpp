@@ -43,12 +43,22 @@ namespace led_control
 
   void showCorrectPositions(logic::LogicBoard* board);
   void ledTask(void *pvParameters);
-  void indicate_moves(const std::vector<int>& possibleMoves, int color, int start_tile, TaskHandle_t* taskHandle);
-  void showWinner(int player_number);
-  void showStartPositions(int num_players, TaskHandle_t* taskHandle);
+  void stopLedTask();
+
+  void indicate_moves(const std::vector<int>& possibleMoves, int color, int start_tile);
+  void stopIndicateMoves();
+
+  void showPlayerPositions(int player_number, const logic::LogicBoard& board);
+  void stopPlayerPositions();
+
+  void showStartPositions(int num_players);
+  void stopStartPositions();
   void prvShowStartPositions(void *pvParameters);
-  void slidePiece(SlideStruct slide, TaskHandle_t* taskHandle);
-  void showPlayerPositions(int player_number, TaskHandle_t* taskHandle, const logic::LogicBoard& board);
+
+  void slidePiece(SlideStruct slide);
+  void stopSlide();
   void prvShowSlide(void *pvParameters);
+  
+  void showWinner(int player_number);
 } //namespace led_control
 #endif // LED_CONTROL_H
