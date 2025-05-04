@@ -62,10 +62,6 @@ namespace logic
 
 
         Serial.println("Setup Complete");
-        Serial.println("Press any key to start game");
-        while (!Serial.available()) {}
-        Serial.read();
-        Serial.println("Game Started");
         Player.currentPlayer = 0;
         Player.setPlayerCount(&Scanner, &Terminal);
         Serial.println("Player count: " + String(Player.getPlayerCount()));
@@ -73,7 +69,11 @@ namespace logic
 
         //code to ensure setup is done correctly
         Serial.println("Please place pieces on start locations");
-        while (!Board.allPiecesOnStart(&Player, &Terminal, &pieceDetection)) {};
+        led_control::showStartPositions(Player.getPlayerCount());
+        while (!Board.allPiecesOnStart(&Player, &Terminal, &pieceDetection)) {vTaskDelay(pdMS_TO_TICKS(500));};
+        led_control::stopStartPositions();
+        Serial.println("All pieces placed on start locations");
+        Serial.println("Game starting...");
 
         while (!Board.checkWinCondition(&Player)){
             led_control::showCorrectPositions(&Board);
@@ -90,6 +90,10 @@ namespace logic
     void LogicController::takeTurn() {
         Serial.println("Player " + String(Player.currentPlayer + 1) + "'s turn");
         Serial.println();
+
+        // //Flash LEDs for current player pieces
+        led_control::showPlayerPositions(Player.currentPlayer+1, Board);
+
         //Scan chip
         Serial.println("Draw and scan a chip");
         
@@ -97,7 +101,9 @@ namespace logic
         while (scan_val == rfid::kInvalidCardName)
         {
             scan_val = Scanner.scanCard();
-        }        Scanner.lastChip = scan_val;
+        }        
+        Scanner.lastChip = scan_val;
+        led_control::stopPlayerPositions();
         Terminal.t_displayChipInstructions(&Scanner);
         
         // Stop showing where all pieces should be
@@ -112,6 +118,7 @@ namespace logic
         //If there are no possible moves, go to next player
         if (possibleMoves.size() == 0) {
             Serial.println("No possible moves");
+            vTaskDelay(pdMS_TO_TICKS(2000)); // wait for a bit before going to next player
             nextPlayer();
             return;
         }
@@ -123,12 +130,11 @@ namespace logic
         Serial.println();
         
         // flash LEDs at potential move locations
-        TaskHandle_t led_task = NULL;
-        led_control::indicate_moves(possibleMoves, Player.getPlayerColor(Player.currentPlayer), Calc.movingFrom, &led_task);
+        led_control::indicate_moves(possibleMoves, Player.getPlayerColor(Player.currentPlayer), Calc.movingFrom);
         
         //handle whoops, 7s, and 11s
         Special.handleWhoops(&Scanner, &Board, &Player, &Calc, possibleMoves, &pieceDetection);
-        Special.handleSeven(&Scanner, &Board, &Player, &Calc, possibleMoves, Calc.movingFrom, led_task, &pieceDetection);
+        Special.handleSeven(&Scanner, &Board, &Player, &Calc, possibleMoves, Calc.movingFrom, &pieceDetection);
         Special.handleEleven(&Scanner, &Board, &Player, possibleMoves, Calc.movingFrom, &pieceDetection);
 
         //Place piece on new location
@@ -143,23 +149,21 @@ namespace logic
                 while (!pieceDetection.hasChangedSensor()) {} // wait until player chooses a piece
                 newLocation = piece_detection::kSensorMap.at(pieceDetection.getChangedSensors().at(0));
             }
-            vTaskDelete(led_task); // turn off leds
+            led_control::stopIndicateMoves();
             Serial.printf("\nMoving player %d's piece %d ----> %d\n", Player.currentPlayer + 1, Calc.movingFrom, newLocation);
 
             //If piece hits other piece, send other piece back to start
             if (Board.currentLocations[newLocation] != 0) {
-                Serial.print("COLLISION: Send opponent's piece back to start. Press any key to confirm: ");
-                while (!Serial.available()) {}
-                Serial.read();
+                Serial.print("COLLISION: Send opponent's piece back to start.");
                 Board.currentLocations[Board.findNextOpenStart(Board.currentLocations[newLocation])] = Board.currentLocations[newLocation];
             }
             Board.currentLocations[newLocation] = Board.currentLocations[Calc.movingFrom];
             Board.currentLocations[Calc.movingFrom] = 0;
 
             //Slide if on slide square
-            newLocation = Board.checkSlide(&Player, newLocation);
+            newLocation = Board.checkSlide(&Player, newLocation, &pieceDetection);
         } else if (Scanner.lastChip == 0 || Scanner.lastChip == 11) {
-            vTaskDelete(led_task); // turn off leds
+            led_control::stopIndicateMoves();
         }
         
         if (Board.checkWinCondition(&Player)) {

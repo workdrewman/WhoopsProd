@@ -18,6 +18,12 @@ namespace logic {
 
 namespace led_control
 {
+  struct SlideStruct {
+    int start_location;
+    int end_location;
+    int color;
+  };
+
   /// @brief Method to indicate a move from one tile to another
   /// @param from Index of the current tile
   /// @param to Index of the tile to move to
@@ -37,7 +43,22 @@ namespace led_control
 
   void showCorrectPositions(logic::LogicBoard* board);
   void ledTask(void *pvParameters);
-  void indicate_moves(const std::vector<int>& possibleMoves, int color, int start_tile, TaskHandle_t* taskHandle);
+  void stopLedTask();
+
+  void indicate_moves(const std::vector<int>& possibleMoves, int color, int start_tile);
+  void stopIndicateMoves();
+
+  void showPlayerPositions(int player_number, const logic::LogicBoard& board);
+  void stopPlayerPositions();
+
+  void showStartPositions(int num_players);
+  void stopStartPositions();
+  void prvShowStartPositions(void *pvParameters);
+
+  void slidePiece(SlideStruct slide);
+  void stopSlide();
+  void prvShowSlide(void *pvParameters);
+  
   void showWinner(int player_number);
 } //namespace led_control
 #endif // LED_CONTROL_H

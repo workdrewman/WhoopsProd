@@ -113,8 +113,7 @@ namespace logic {
         }
 
         // indicate which pieces can move
-        TaskHandle_t led_task = NULL;
-        led_control::indicate_moves(validPieces, Player->getPlayerColor(Player->currentPlayer), 255, &led_task);
+        led_control::indicate_moves(validPieces, Player->getPlayerColor(Player->currentPlayer), 255);
 
         int location;
         Serial.print("Select a location to move " + String(Player->currentPlayer + 1) + "'s piece from: ");
@@ -131,7 +130,7 @@ namespace logic {
         }
 
         // Turn off led after the correct piece is chosen
-        vTaskDelete(led_task);
+        led_control::stopIndicateMoves();
         Calc->movingFrom = location;
         //setPlayerColor();
     }

@@ -41,7 +41,7 @@ namespace logic {
 
             int findNextOpenHome(int color);
             int findNextOpenStart(int color);
-            int checkSlide(LogicPlayer* Player, int location);
+            int checkSlide(LogicPlayer* Player, int location, piece_detection::PieceDetection* pieceDetection);
 
             bool allPiecesPlaced();
             bool allPiecesOnStart(LogicPlayer* Player, LogicTerminal* Terminal, piece_detection::PieceDetection* pieceDetection);

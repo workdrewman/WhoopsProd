@@ -4,8 +4,8 @@
 #include "game_logic/logic_player.hpp"
 #include "game_logic/logic_terminal.hpp"
 #include "piece_detection/piece_detection.hpp"
+#include "led_control/led.hpp"
 #include <algorithm>
-#include <FastLED.h>
 
 namespace logic {
 
@@ -140,7 +140,7 @@ namespace logic {
     }
 
     //Returns the new location of the piece
-    int LogicBoard::checkSlide(LogicPlayer* Player, int location) {
+    int LogicBoard::checkSlide(LogicPlayer* Player, int location, piece_detection::PieceDetection* pieceDetection) {
         if (find(kSlideStartLocations.begin(), kSlideStartLocations.end(), location) != kSlideStartLocations.end()) {
             //Can't slide on your own color
             int color = currentLocations[location];
@@ -160,6 +160,8 @@ namespace logic {
             //Otherwise slide
             int slideIndex= find(kSlideStartLocations.begin(), kSlideStartLocations.end(), location) - kSlideStartLocations.begin();
             Serial.println("Move the piece to the end of the slide (location " + String(kSlideEndLocations[slideIndex]) + ") and send any pawns you collide with back to their Start.");
+            led_control::SlideStruct slide = {location, kSlideEndLocations[slideIndex], color};
+            led_control::slidePiece(slide);
             for (int i = kSlideStartLocations[slideIndex] + 1; i <= kSlideEndLocations[slideIndex]; i++) {
                 if (currentLocations[i] != 0) {
                     currentLocations[findNextOpenStart(currentLocations[i])] = currentLocations[i];
@@ -168,7 +170,9 @@ namespace logic {
             }
             currentLocations[kSlideEndLocations[slideIndex]] = currentLocations[location];
             currentLocations[location] = 0;
-            return slideIndex;
+            while (!pieceDetection->hasChangedSensor()) {}
+            led_control::stopSlide();
+            return kSlideEndLocations[slideIndex];
         }
         return location;
     }
@@ -185,14 +189,9 @@ namespace logic {
 
     bool LogicBoard::allPiecesOnStart(LogicPlayer* Player, LogicTerminal* Terminal, piece_detection::PieceDetection* pieceDetection) {
         int numberOfFilledAreas = 0;
-        // auto data = pieceDetection->getDataCopy();
+
         pieceDetection->updateBoard(this); // update the currentLocations by reading all sensors
         pieceDetection->getChangedSensors(); // clear the changed sensors
-
-        // for (int i = 0; i < 80; i++) {
-        //     Serial.printf("%d = %d, ", i, currentLocations[i]);
-        // }
-        // Serial.println();
 
         //Check if 50, 51, 52 occupied
         //If true increment numberOfFilledAreas
@@ -204,6 +203,9 @@ namespace logic {
             currentLocations[52] = 1;
             Player->playerColors[0] = 1;
         }
+        else {
+            Serial.printf("50:%d, 51:%d, 52:%d\n", currentLocations[50], currentLocations[51], currentLocations[52]);
+        }
         
         //Check if 59, 60, 61 occupied
         //If true increment numberOfFilledAreas
@@ -214,6 +216,9 @@ namespace logic {
             currentLocations[60] = 2;
             currentLocations[61] = 2;
             Player->playerColors[1] = 2;
+        }
+        else {
+            Serial.printf("59:%d, 60:%d, 61:%d\n", currentLocations[59], currentLocations[60], currentLocations[61]);
         }
 
         
@@ -227,6 +232,9 @@ namespace logic {
             currentLocations[70] = 3;
             Player->playerColors[2] = 3;
         }
+        else {
+            Serial.printf("68:%d, 69:%d, 70:%d\n", currentLocations[68], currentLocations[69], currentLocations[70]);
+        }
         
         //Check if 77, 78, 79 occupied
         //If true increment numberOfFilledAreas
@@ -237,6 +245,9 @@ namespace logic {
             currentLocations[78] = 4;
             currentLocations[79] = 4;
             Player->playerColors[3] = 4;
+        }
+        else {
+            Serial.printf("77:%d, 78:%d, 79:%d\n", currentLocations[77], currentLocations[78], currentLocations[79]);
         }
         
         //For terminal testing

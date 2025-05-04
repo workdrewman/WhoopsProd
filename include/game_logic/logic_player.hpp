@@ -22,7 +22,7 @@ namespace logic {
             void setPlayerColor(int movingFrom, int color, int player);
             int getPlayerCount();
             void setPlayerCount(rfid::RfidScanner* Scanner, LogicTerminal* Terminal);
-            void handleSelfCollision(LogicBoard* Board, int possibleMove, vector<int> &possibleMoves, int index);
+            void handleSelfCollision(LogicBoard* Board, int possibleMove, vector<int> &possibleMoves, int index, int chip, int movingFrom);
 
             int currentPlayer;
             vector<int> playerColors = {0, 0, 0, 0}; 

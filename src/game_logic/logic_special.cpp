@@ -31,14 +31,12 @@ namespace logic {
             Board->currentLocations[opponentPawn] = Player->getPlayerColor(Player->currentPlayer);
             Board->currentLocations[Calc->movingFrom] = 0;
             //Slide if on slide square
-            int newLocation = Board->checkSlide(Player, opponentPawn);
-            Serial.println("Press any key to confirm opponent's pawn has been sent back to start and your pawn has been set in their previous location.");
-            while (!Serial.available()) {}
-            Serial.read();
+            int newLocation = Board->checkSlide(Player, opponentPawn, pieceDetection);
+            Serial.println("Opponent's pawn has been sent back to start and your pawn has been set in their previous location.");
         }
     }
 
-    void LogicSpecial::handleSeven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom, TaskHandle_t led_task, piece_detection::PieceDetection* pieceDetection) {
+    void LogicSpecial::handleSeven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, LogicCalculations* Calc, vector<int> possibleMoves, int movingFrom, piece_detection::PieceDetection* pieceDetection) {
         if (Scanner->lastChip == 7) {
             int color = Player->getPlayerColor(Player->currentPlayer);
             Serial.print("Place your pawn in a valid location: ");
@@ -50,16 +48,22 @@ namespace logic {
                 while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
                 location = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
             }
+            
+            //If piece hits other piece, send other piece back to start
+            if (Board->currentLocations[location] != 0) {
+                Serial.print("COLLISION: Send opponent's piece back to start.");
+                Board->currentLocations[Board->findNextOpenStart(Board->currentLocations[location])] = Board->currentLocations[location];
+            }
+            
             Board->currentLocations[location] = color;
             Board->currentLocations[movingFrom] = 0;
             
-            // turn off leds
-            vTaskDelete(led_task); 
+            led_control::stopIndicateMoves();
             FastLED.clear();
             FastLED.show();
 
             //Slide if on slide square
-            int newLocation = Board->checkSlide(Player, location);
+            int newLocation = Board->checkSlide(Player, location, pieceDetection);
             int firstDistance = Calc->getDistance(Player, movingFrom, location);
             int secondDistance = 7 - firstDistance;
             if (secondDistance == 0) {
@@ -67,31 +71,36 @@ namespace logic {
             }
             Serial.println("You have " + String(secondDistance) + " spaces left to move with your second pawn.");
             Serial.print("Possible second pawn current locations(s): ");
+            std::vector<int> validPieces;
             for (int i = 0; i < 44; i++) {
                 if (Board->currentLocations[i] == color && i != location && i != newLocation) {
                     Serial.printf("%d ", i);
+                    validPieces.push_back(i);
                 }
             }
             for (int i = 0; i < kSafetyLocations.size(); i++) {
                 if (Board->currentLocations[kSafetyLocations[i]] == color && kSafetyLocations[i] != location) {
                     Serial.printf("%d ", kSafetyLocations[i]);
+                    validPieces.push_back(kSafetyLocations[i]);
                 }
             }
             Serial.println();
             Serial.print("Select a pawn location to move from: ");
+            led_control::indicate_moves(validPieces, Player->getPlayerColor(Player->currentPlayer), 255);
             while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
             int secondPawnStart = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
-            while (Board->currentLocations[secondPawnStart] != color) {
+            while ((Board->currentLocations[secondPawnStart] != color) || secondPawnStart == location || secondPawnStart == newLocation) {
                 Serial.println("Invalid pawn");
                 Serial.print("Select a pawn to move: ");
                 while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
                 secondPawnStart = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
             }
-            moveSecondPawn(Board, Player, secondDistance, secondPawnStart);
+            led_control::stopIndicateMoves();
+            moveSecondPawn(Board, Player, secondDistance, secondPawnStart, pieceDetection);
         }
     }
 
-    void LogicSpecial::moveSecondPawn(LogicBoard* Board, LogicPlayer* Player, int distance, int start) { // Need to finish
+    void LogicSpecial::moveSecondPawn(LogicBoard* Board, LogicPlayer* Player, int distance, int start, piece_detection::PieceDetection* pieceDetection) { // Need to finish
         Serial.print("Move your second pawn " + String(distance) + " spaces forward.");
         Board->currentLocations[start] = 0;
         
@@ -117,24 +126,22 @@ namespace logic {
                 location++;
             }
         }
-        TaskHandle_t led_task = NULL;
-        led_control::indicate_moves({location}, color, start, &led_task);
-        while (!Serial.available()) {}
-        vTaskDelete(led_task); // turn off leds
+        led_control::indicate_moves({location}, color, start);
+        while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
+        vTaskDelay(pdMS_TO_TICKS(500));
+        led_control::stopIndicateMoves();
         FastLED.clear();
         FastLED.show();
         
         //If piece hits other piece, send other piece back to start
         if (Board->currentLocations[location] != 0) {
-            Serial.print("COLLISION: Send opponent's piece back to start. Press any key to confirm: ");
-            while (!Serial.available()) {}
-            Serial.read();
+            Serial.print("COLLISION: Send opponent's piece back to start.");
             Board->currentLocations[Board->findNextOpenStart(Board->currentLocations[location])] = Board->currentLocations[location];
         }
         Board->currentLocations[location] = color;
         Board->currentLocations[start] = 0;
         //Slide if on slide square
-        location = Board->checkSlide(Player, location);
+        location = Board->checkSlide(Player, location, pieceDetection);
     }
 
     void LogicSpecial::handleEleven(rfid::RfidScanner* Scanner, LogicBoard* Board, LogicPlayer* Player, vector<int> possibleMoves, int movingFrom, piece_detection::PieceDetection* pieceDetection) {
@@ -154,30 +161,26 @@ namespace logic {
             if (Board->currentLocations[endLocation] == 0) {
                 Board->currentLocations[endLocation] = color;
                 //Slide if on slide square
-                endLocation = Board->checkSlide(Player, endLocation);
+                endLocation = Board->checkSlide(Player, endLocation, pieceDetection);
                 Board->currentLocations[movingFrom] = 0;
             } 
             else if (endLocation == (movingFrom + 11)%44) {
-                Serial.print("COLLISION: Send opponent's piece back to start. Press any key to confirm: ");
-                while (!Serial.available()) {}
-                Serial.read();
+                Serial.print("COLLISION: Send opponent's piece back to start.");
                 Board->currentLocations[Board->findNextOpenStart(Board->currentLocations[endLocation])] = Board->currentLocations[endLocation];
                 Board->currentLocations[endLocation] = color;
                 //Slide if on slide square
-                endLocation = Board->checkSlide(Player, endLocation);
+                endLocation = Board->checkSlide(Player, endLocation, pieceDetection);
                 Board->currentLocations[movingFrom] = 0;
             }
             else {
                 int opponentColor = Board->currentLocations[endLocation];
                 Board->currentLocations[movingFrom] = opponentColor;
                 //Slide if on slide square
-                int opponentPosition = Board->checkSlide(Player, movingFrom);
+                int opponentPosition = Board->checkSlide(Player, movingFrom, pieceDetection);
                 Board->currentLocations[endLocation] = color;
                 //Slide if on slide square
-                endLocation = Board->checkSlide(Player, endLocation);
-                Serial.print("Press any key to confirm opponent's pawn swapped with your pawn.");
-                while (!Serial.available()) {}
-                Serial.read();
+                endLocation = Board->checkSlide(Player, endLocation, pieceDetection);
+                Serial.print("Opponent's pawn swapped with your pawn.");
             }
         }
     }
