@@ -270,13 +270,15 @@ void prvShowStartPositions(void *pvParameters) {
 }
 
 void slidePiece(SlideStruct slide) {
-  g_slide = slide;
+  g_slide.color = slide.color;
+  g_slide.start_location = slide.start_location;
+  g_slide.end_location = slide.end_location;
 
   if (slide_task_handle == NULL) {
     xTaskCreate(
       led_control::prvShowSlide,
       "Show Start Positions",
-      2048,
+      4096,
       NULL,
       1,
       &slide_task_handle
@@ -289,9 +291,11 @@ void slidePiece(SlideStruct slide) {
 
 void stopSlide() {
   if (eTaskGetState(slide_task_handle) != eDeleted) {
-    vTaskSuspend(slide_task_handle);
+    vTaskDelete(slide_task_handle);
     slide_task_handle = NULL;
   }
+  FastLED.clear();
+  FastLED.show();
 }
 
 void prvShowSlide(void *pvParameters) {
@@ -302,19 +306,19 @@ void prvShowSlide(void *pvParameters) {
   CRGB color = number_to_color(g_slide.color);
   
   while(1) {
-    FastLED.leds()[indexes[0]] = color;
+    FastLED.leds()[indexes.at(0)] = color;
     for (int i = 0; i < indexes.size(); ++i) {
       if (i >= 2) {
-        FastLED.leds()[indexes[i-2]].fadeLightBy(230);
-        FastLED.leds()[indexes[i-1]].fadeLightBy(200);
+        FastLED.leds()[indexes.at(i-2)].fadeLightBy(230);
+        FastLED.leds()[indexes.at(i-1)].fadeLightBy(200);
       }
-      FastLED.leds()[indexes[i]] = color;
-      FastLED.leds()[indexes[i]].fadeLightBy(200);
+      FastLED.leds()[indexes.at(i)] = color;
+      FastLED.leds()[indexes.at(i)].fadeLightBy(200);
       FastLED.show();
       vTaskDelay(pdMS_TO_TICKS(100));
     }
-    FastLED.leds()[indexes[indexes.size()-2]].fadeLightBy(230);
-    FastLED.leds()[indexes[indexes.size()-1]].fadeLightBy(200);
+    FastLED.leds()[indexes.at(indexes.size()-2)].fadeLightBy(230);
+    FastLED.leds()[indexes.at(indexes.size()-1)].fadeLightBy(200);
     vTaskDelay(pdMS_TO_TICKS(100));
     FastLED.show();
     FastLED.clear();

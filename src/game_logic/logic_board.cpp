@@ -172,7 +172,7 @@ namespace logic {
             currentLocations[location] = 0;
             while (!pieceDetection->hasChangedSensor()) {}
             led_control::stopSlide();
-            return slideIndex;
+            return kSlideEndLocations[slideIndex];
         }
         return location;
     }

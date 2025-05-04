@@ -385,7 +385,7 @@ namespace logic {
 
         //Handle if a possible move lands on one of your own pawns
         for (int i = 0; i < possibleMoves.size(); i++) {
-            Player->handleSelfCollision(Board, possibleMoves[i], possibleMoves, i);
+            Player->handleSelfCollision(Board, possibleMoves[i], possibleMoves, i, distance, selectedPawn);
         }
         return possibleMoves;
     }

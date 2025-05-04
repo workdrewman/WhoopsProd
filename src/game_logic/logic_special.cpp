@@ -71,26 +71,31 @@ namespace logic {
             }
             Serial.println("You have " + String(secondDistance) + " spaces left to move with your second pawn.");
             Serial.print("Possible second pawn current locations(s): ");
+            std::vector<int> validPieces;
             for (int i = 0; i < 44; i++) {
                 if (Board->currentLocations[i] == color && i != location && i != newLocation) {
                     Serial.printf("%d ", i);
+                    validPieces.push_back(i);
                 }
             }
             for (int i = 0; i < kSafetyLocations.size(); i++) {
                 if (Board->currentLocations[kSafetyLocations[i]] == color && kSafetyLocations[i] != location) {
                     Serial.printf("%d ", kSafetyLocations[i]);
+                    validPieces.push_back(kSafetyLocations[i]);
                 }
             }
             Serial.println();
             Serial.print("Select a pawn location to move from: ");
+            led_control::indicate_moves(validPieces, Player->getPlayerColor(Player->currentPlayer), 255);
             while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
             int secondPawnStart = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
-            while (Board->currentLocations[secondPawnStart] != color) {
+            while ((Board->currentLocations[secondPawnStart] != color) || secondPawnStart == location || secondPawnStart == newLocation) {
                 Serial.println("Invalid pawn");
                 Serial.print("Select a pawn to move: ");
                 while (!pieceDetection->hasChangedSensor()) {} // wait until player chooses a piece
                 secondPawnStart = piece_detection::kSensorMap.at(pieceDetection->getChangedSensors().at(0));
             }
+            led_control::stopIndicateMoves();
             moveSecondPawn(Board, Player, secondDistance, secondPawnStart, pieceDetection);
         }
     }

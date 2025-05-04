@@ -118,7 +118,7 @@ namespace logic
         //If there are no possible moves, go to next player
         if (possibleMoves.size() == 0) {
             Serial.println("No possible moves");
-            vTaskDelay(pdMS_TO_TICKS(4000)); // wait for a bit before going to next player
+            vTaskDelay(pdMS_TO_TICKS(2000)); // wait for a bit before going to next player
             nextPlayer();
             return;
         }
